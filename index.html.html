@@ -1,0 +1,2396 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>경남프라자 관리시스템 2026</title>
+<style>
+/* ===== 비밀번호 화면 ===== */
+#lockScreen{
+  position:fixed;inset:0;
+  background:linear-gradient(135deg,#0d1757 0%,#1a237e 45%,#1565c0 100%);
+  display:flex;align-items:center;justify-content:center;
+  z-index:99999;overflow:hidden;
+}
+/* 배경 장식 원 */
+#lockScreen::before{
+  content:'';position:absolute;width:500px;height:500px;
+  border-radius:50%;background:rgba(255,255,255,.04);
+  top:-120px;right:-120px;pointer-events:none;
+}
+#lockScreen::after{
+  content:'';position:absolute;width:350px;height:350px;
+  border-radius:50%;background:rgba(255,255,255,.04);
+  bottom:-80px;left:-80px;pointer-events:none;
+}
+.lock-box{
+  background:#fff;border-radius:20px;padding:48px 40px 36px;
+  width:100%;max-width:380px;
+  box-shadow:0 24px 60px rgba(0,0,0,.4),0 0 0 1px rgba(255,255,255,.1);
+  text-align:center;position:relative;z-index:1;
+  animation:lockFadeIn .4s ease;
+}
+@keyframes lockFadeIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.lock-emblem{
+  width:72px;height:72px;border-radius:50%;
+  background:linear-gradient(135deg,#1a237e,#3949ab);
+  display:flex;align-items:center;justify-content:center;
+  font-size:32px;margin:0 auto 20px;
+  box-shadow:0 8px 24px rgba(26,35,126,.35);
+}
+.lock-title{
+  font-size:20px;font-weight:800;color:#1a237e;
+  margin-bottom:4px;letter-spacing:-.3px;
+}
+.lock-year{
+  display:inline-block;background:#e8eaf6;color:#3949ab;
+  font-size:11px;font-weight:700;padding:2px 10px;
+  border-radius:20px;margin-bottom:6px;letter-spacing:.05em;
+}
+.lock-sub{font-size:12px;color:#9e9e9e;margin-bottom:28px}
+.lock-input-wrap{position:relative;margin-bottom:4px}
+.lock-input-wrap::before{
+  content:'🔑';position:absolute;left:14px;top:50%;
+  transform:translateY(-50%);font-size:16px;z-index:1;
+}
+.lock-input{
+  width:100%;padding:13px 16px 13px 42px;
+  border:2px solid #e0e3ef;border-radius:10px;
+  font-size:15px;text-align:left;letter-spacing:2px;
+  font-family:'Malgun Gothic',monospace;outline:none;
+  transition:border-color .2s,box-shadow .2s;
+  color:#1a237e;background:#f8f9ff;
+}
+.lock-input:focus{
+  border-color:#3949ab;box-shadow:0 0 0 3px rgba(57,73,171,.15);
+  background:#fff;
+}
+.lock-input::placeholder{color:#bdbdbd;letter-spacing:0;font-size:13px}
+.lock-input::-ms-reveal,.lock-input::-ms-clear{display:none}
+.lock-input::-webkit-credentials-auto-fill-button{visibility:hidden;pointer-events:none;position:absolute;right:0}
+.lock-input::-webkit-contacts-auto-fill-button{visibility:hidden;pointer-events:none}
+.lock-btn{
+  width:100%;margin-top:16px;padding:14px;
+  background:linear-gradient(135deg,#1a237e,#3949ab);
+  color:#fff;border:none;border-radius:10px;
+  font-size:15px;font-weight:700;cursor:pointer;
+  font-family:'Malgun Gothic',sans-serif;
+  transition:all .2s;letter-spacing:.3px;
+  box-shadow:0 4px 16px rgba(26,35,126,.3);
+}
+.lock-btn:hover{
+  transform:translateY(-1px);
+  box-shadow:0 6px 20px rgba(26,35,126,.4);
+}
+.lock-btn:active{transform:translateY(0)}
+.lock-err{
+  color:#e53935;font-size:12px;margin-top:10px;
+  min-height:18px;font-weight:600;
+  animation:shake .3s ease;
+}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.lock-divider{
+  border:none;border-top:1px solid #f0f0f0;
+  margin:20px 0 14px;
+}
+.lock-hint{
+  font-size:11px;color:#bdbdbd;line-height:1.7;
+}
+.lock-hint strong{color:#9e9e9e}
+#appWrapper{display:none}
+
+/* ===== 기본 리셋 & 변수 ===== */
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --navy:#1a237e;--navy2:#283593;--navy3:#3949ab;
+  --red:#c62828;--red2:#ffebee;
+  --green:#1b5e20;--green2:#e8f5e9;
+  --amber:#e65100;--amber2:#fff8e1;
+  --gray:#37474f;--gray2:#eceff1;--gray3:#b0bec5;
+  --border:#dde1e7;--bg:#f4f6fb;
+  --font:'Malgun Gothic','Apple SD Gothic Neo','Noto Sans KR',sans-serif;
+}
+body{font-family:var(--font);background:var(--bg);color:#1a1a2e;font-size:14px;min-height:100vh}
+
+/* ===== 레이아웃 ===== */
+.layout{display:flex;min-height:100vh}
+.sidebar{width:220px;background:var(--navy);color:#fff;flex-shrink:0;display:flex;flex-direction:column;position:fixed;top:0;left:0;height:100vh;z-index:100;overflow-y:auto}
+.main{margin-left:220px;flex:1;display:flex;flex-direction:column;min-height:100vh}
+.topbar{background:#fff;border-bottom:1px solid var(--border);padding:12px 24px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:50;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.content{padding:22px 24px;flex:1}
+
+/* ===== 사이드바 ===== */
+.sb-logo{padding:20px 18px 14px;border-bottom:1px solid rgba(255,255,255,.12)}
+.sb-logo h1{font-size:15px;font-weight:700;line-height:1.3;letter-spacing:-.3px}
+.sb-logo p{font-size:11px;opacity:.6;margin-top:4px}
+.sb-year{font-size:20px;font-weight:900;color:#90caf9;letter-spacing:-1px}
+.sb-menu{padding:10px 0;flex:1}
+.sb-section{padding:8px 18px 4px;font-size:10px;font-weight:700;letter-spacing:.08em;opacity:.45;text-transform:uppercase}
+.sb-item{display:flex;align-items:center;gap:10px;padding:9px 18px;cursor:pointer;font-size:13px;opacity:.8;transition:all .15s;border:none;background:none;color:#fff;width:100%;text-align:left;font-family:var(--font)}
+.sb-item:hover{background:rgba(255,255,255,.1);opacity:1}
+.sb-item.active{background:rgba(255,255,255,.15);opacity:1;border-left:3px solid #90caf9;padding-left:15px}
+.sb-item .ico{width:18px;text-align:center;font-size:15px}
+.sb-bottom{padding:14px 18px;border-top:1px solid rgba(255,255,255,.12);font-size:11px;opacity:.5;line-height:1.6}
+
+/* ===== 탑바 ===== */
+.tb-title{font-size:15px;font-weight:700;color:var(--navy)}
+.tb-sub{font-size:12px;color:#888;margin-left:4px}
+.tb-actions{margin-left:auto;display:flex;gap:8px;align-items:center}
+.month-sel{padding:6px 10px;border:1.5px solid var(--border);border-radius:6px;font-size:13px;font-family:var(--font);background:#fff;cursor:pointer}
+.month-sel:focus{outline:none;border-color:var(--navy)}
+
+/* ===== 공통 컴포넌트 ===== */
+.card{background:#fff;border-radius:10px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,.07);margin-bottom:16px;border:1px solid var(--border)}
+.card-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-bottom:12px;border-bottom:1.5px solid var(--gray2)}
+.card-title{font-size:14px;font-weight:700;color:var(--navy);display:flex;align-items:center;gap:8px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+
+/* ===== 통계 카드 ===== */
+.stat{background:#fff;border-radius:10px;padding:16px 18px;border:1px solid var(--border);box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.stat.red{border-left:4px solid var(--red)}
+.stat.green{border-left:4px solid #2e7d32}
+.stat.blue{border-left:4px solid var(--navy3)}
+.stat.amber{border-left:4px solid #f57f17}
+.stat-label{font-size:11px;color:#666;margin-bottom:5px;font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+.stat-val{font-size:22px;font-weight:700;color:#1a1a2e;line-height:1}
+.stat-sub{font-size:11px;color:#999;margin-top:5px}
+
+/* ===== 테이블 ===== */
+.tbl-wrap{overflow-x:auto;border-radius:8px;border:1px solid var(--border)}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead th{background:var(--navy);color:#fff;padding:9px 11px;text-align:left;font-weight:600;white-space:nowrap;font-size:12px}
+thead th.r{text-align:right}
+tbody td{padding:8px 11px;border-bottom:1px solid #f0f2f5;white-space:nowrap}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:#f7f9ff}
+tfoot td{padding:9px 11px;background:#e8eaf6;font-weight:700;border-top:2px solid var(--navy3)}
+.r{text-align:right;font-variant-numeric:tabular-nums}
+.unpaid-row td{background:#fff5f5}
+.unpaid-row:hover td{background:#ffecec}
+
+/* ===== 배지 ===== */
+.badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600}
+.badge.ok{background:var(--green2);color:var(--green)}
+.badge.ng{background:var(--red2);color:var(--red)}
+.badge.warn{background:var(--amber2);color:var(--amber)}
+.badge.info{background:#e3f2fd;color:#0d47a1}
+
+/* ===== 호실 뱃지 ===== */
+.up{display:inline-block;padding:2px 9px;border-radius:10px;font-size:12px;font-weight:600}
+.f1{background:#e8eaf6;color:#1a237e}
+.f2{background:#e8f5e9;color:#1b5e20}
+.f3{background:#fff8e1;color:#e65100}
+.f4{background:#f3e5f5;color:#6a1b9a}
+.f5{background:#fce4ec;color:#880e4f}
+
+/* ===== 버튼 ===== */
+.btn{padding:8px 16px;border:none;border-radius:7px;cursor:pointer;font-size:13px;font-family:var(--font);font-weight:600;transition:all .15s;display:inline-flex;align-items:center;gap:6px}
+.btn-primary{background:var(--navy);color:#fff}
+.btn-primary:hover{background:var(--navy2)}
+.btn-success{background:#2e7d32;color:#fff}
+.btn-success:hover{background:#388e3c}
+.btn-danger{background:var(--red);color:#fff}
+.btn-danger:hover{background:#b71c1c}
+.btn-outline{background:#fff;border:1.5px solid var(--border);color:#333}
+.btn-outline:hover{background:var(--gray2);border-color:#aaa}
+.btn-sm{padding:5px 11px;font-size:12px}
+
+/* ===== 폼 ===== */
+.form-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:14px}
+.fg{display:flex;flex-direction:column;gap:4px}
+.fg label{font-size:12px;color:#555;font-weight:600}
+.fg input,.fg select,.fg textarea{padding:7px 10px;border:1.5px solid var(--border);border-radius:6px;font-size:13px;font-family:var(--font);transition:border-color .15s;background:#fff}
+.fg input:focus,.fg select:focus,.fg textarea:focus{outline:none;border-color:var(--navy)}
+.fg input[type=number]{text-align:right}
+.inp-edit{width:90px;padding:4px 7px;border:1px solid var(--border);border-radius:5px;font-size:12px;text-align:right;font-family:var(--font)}
+.inp-edit:focus{outline:none;border-color:var(--navy3)}
+
+/* ===== 알림 ===== */
+.alert{padding:11px 14px;border-radius:7px;margin-bottom:10px;display:flex;gap:10px;font-size:13px;align-items:flex-start}
+.alert.red{background:var(--red2);border:1px solid #ef9a9a;color:#b71c1c}
+.alert.blue{background:#e3f2fd;border:1px solid #90caf9;color:#0d47a1}
+.alert.green{background:var(--green2);border:1px solid #a5d6a7;color:var(--green)}
+.alert-ico{font-size:16px;line-height:1.4;flex-shrink:0}
+
+/* ===== 섹션 ===== */
+.section{display:none}.section.active{display:block}
+.sec-title{font-size:16px;font-weight:700;color:var(--navy);margin-bottom:16px;display:flex;align-items:center;gap:8px}
+
+/* ===== 바 차트 ===== */
+.bar-chart{display:flex;align-items:flex-end;gap:5px;height:100px;padding:0 2px}
+.bc-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px}
+.bc-bar{width:100%;border-radius:3px 3px 0 0;min-height:4px;background:var(--navy3);cursor:pointer;transition:opacity .15s}
+.bc-bar:hover{opacity:.75}
+.bc-lbl{font-size:9px;color:#888}
+.bc-val{font-size:8px;color:#aaa}
+
+/* ===== 인쇄 고지서 ===== */
+#printArea{display:none}
+@media print{
+  *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
+  html,body{margin:0;padding:0;width:210mm}
+  .layout .sidebar,.main .topbar,.main .content{display:none!important}
+  #printArea{display:block!important;padding:0;margin:0}
+  .receipt-page{
+    width:210mm;min-height:270mm;max-height:297mm;
+    padding:12mm 14mm;margin:0;
+    page-break-after:always;
+    page-break-inside:avoid;
+    box-sizing:border-box;
+    font-size:10pt;
+  }
+  .receipt-page:last-child{page-break-after:auto}
+  @page{size:A4 portrait;margin:0}
+}
+
+/* ===== 납부상태 강조 ===== */
+.paid-cell{background:#e8f5e9;color:#1b5e20;font-weight:700;padding:4px 8px;border-radius:6px;display:inline-block;min-width:80px;text-align:right}
+.unpaid-cell{background:#ffebee;color:#c62828;font-weight:700;padding:4px 8px;border-radius:6px;display:inline-block;min-width:80px;text-align:right}
+.status-paid{background:#e8f5e9;color:#1b5e20;padding:3px 10px;border-radius:12px;font-size:12px;font-weight:700;display:inline-block}
+.status-unpaid{background:#ffebee;color:#c62828;padding:3px 10px;border-radius:12px;font-size:12px;font-weight:700;display:inline-block}
+.pay-action-btn{background:none;border:1px solid #ddd;border-radius:5px;padding:3px 8px;font-size:11px;cursor:pointer;color:#666;font-family:inherit;transition:all .15s}
+.pay-action-btn:hover{background:#f5f5f5;border-color:#aaa;color:#333}
+.pay-action-btn.to-unpaid{color:#c62828;border-color:#f4a4a4}
+.pay-action-btn.to-unpaid:hover{background:#ffebee}
+.pay-action-btn.to-paid{color:#2e7d32;border-color:#a5d6a7}
+.pay-action-btn.to-paid:hover{background:#e8f5e9}
+/* 미납 행 강조 */
+.unpaid-row td{background:#fff8f8}
+.unpaid-row:hover td{background:#ffecec}
+
+/* ===== 수동고지서 항목 ===== */
+.manual-item{background:#f8f9ff;border-radius:8px;padding:10px 12px;margin-bottom:8px;border:1px solid var(--border)}
+
+/* ===== 모달 ===== */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:999;display:flex;align-items:center;justify-content:center;padding:20px}
+.modal{background:#fff;border-radius:12px;padding:24px;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,.2)}
+.modal-title{font-size:16px;font-weight:700;color:var(--navy);margin-bottom:18px;display:flex;align-items:center;gap:8px}
+.modal-close{margin-left:auto;background:none;border:none;cursor:pointer;font-size:20px;color:#888;padding:0 4px}
+.modal-footer{display:flex;gap:8px;justify-content:flex-end;margin-top:18px;padding-top:14px;border-top:1px solid var(--border)}
+
+/* ===== 고지서 스타일 (A4 흑백 인쇄용) ===== */
+.receipt-page{width:210mm;margin:0 auto;padding:12mm;font-family:'Malgun Gothic',sans-serif;font-size:10pt;color:#000;background:#fff}
+.receipt-title{text-align:center;border-bottom:2px solid #000;padding-bottom:8px;margin-bottom:10px}
+.receipt-title h2{font-size:14pt;font-weight:700;letter-spacing:2px}
+.receipt-title p{font-size:9pt;margin-top:3px}
+.receipt-unit-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;padding:8px 10px;border:1px solid #000}
+.receipt-unit-hdr .unit-name{font-size:13pt;font-weight:700}
+.receipt-unit-hdr .unit-meta{font-size:8.5pt;text-align:right;line-height:1.7}
+.receipt-sections{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.rs-box{border:1px solid #000}
+.rs-box-title{background:#000;color:#fff;padding:4px 8px;font-size:9pt;font-weight:700}
+.rs-row{display:flex;justify-content:space-between;padding:3.5px 8px;border-bottom:1px dotted #ccc;font-size:9pt}
+.rs-row:last-child{border-bottom:none}
+.rs-row.bold{font-weight:700}
+.receipt-total{border:2px solid #000;padding:10px;display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.receipt-total .t-label{font-size:11pt;font-weight:700}
+.receipt-total .t-val{font-size:16pt;font-weight:900;letter-spacing:-1px}
+.receipt-total .t-after{font-size:8pt;margin-top:3px;color:#444}
+.receipt-bank{border:1px solid #000;padding:8px 10px;font-size:8.5pt;line-height:1.8;display:flex;justify-content:space-between}
+.receipt-meter{border:1px solid #000;margin-bottom:10px}
+.receipt-meter-title{background:#000;color:#fff;padding:3px 8px;font-size:9pt;font-weight:700}
+.receipt-meter-row{display:flex;font-size:9pt}
+.receipt-meter-cell{flex:1;padding:3px 8px;border-right:1px solid #ccc;border-bottom:1px solid #ccc;text-align:center}
+.receipt-meter-cell.hd{background:#f5f5f5;font-weight:700}
+.receipt-meter-cell:last-child{border-right:none}
+.receipt-stamp{width:60px;height:60px;border:2px dashed #ccc;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:8pt;color:#ccc;flex-shrink:0}
+.receipt-divider{border:none;border-top:1px dashed #999;margin:12px 0}
+/* 중간정산 고지서 */
+.interim-box{border:2px solid #000;padding:10px;margin-bottom:10px}
+.interim-title{font-size:11pt;font-weight:700;text-align:center;margin-bottom:8px;border-bottom:1px solid #000;padding-bottom:5px}
+.interim-row{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px dotted #ccc;font-size:9pt}
+.interim-total{display:flex;justify-content:space-between;padding:6px 0;font-size:12pt;font-weight:700;border-top:2px solid #000;margin-top:4px}
+
+/* ===== 반응형 ===== */
+@media(max-width:768px){
+  .sidebar{width:60px}
+  .sb-logo h1,.sb-logo p,.sb-item span,.sb-section,.sb-bottom{display:none}
+  .main{margin-left:60px}
+  .grid4{grid-template-columns:repeat(2,1fr)}
+  .grid3{grid-template-columns:1fr 1fr}
+  .grid2{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- 비밀번호 잠금 화면 -->
+<div id="lockScreen">
+  <div class="lock-box">
+    <div class="lock-emblem">🏢</div>
+    <div class="lock-year">2026 관리시스템</div>
+    <div class="lock-title">경남프라자</div>
+    <div class="lock-sub">관리단 전용 시스템입니다<br>비밀번호를 입력해 주세요</div>
+    <div class="lock-input-wrap">
+      <input class="lock-input" type="password" id="pwInput" placeholder="비밀번호 입력"
+        onkeydown="if(event.key==='Enter')checkPw()" autofocus maxlength="30" autocomplete="new-password">
+    </div>
+    <div class="lock-err" id="pwErr"></div>
+    <button class="lock-btn" onclick="checkPw()">입장하기</button>
+    <hr class="lock-divider">
+    <div class="lock-hint">
+      <strong>경남프라자 관리단</strong><br>
+      T. 031-422-7474 · 우리은행 1005-902-946812
+    </div>
+  </div>
+</div>
+
+<!-- 앱 전체 래퍼 -->
+<div id="appWrapper">
+
+<!-- 인쇄 영역 -->
+<div id="printArea"></div>
+
+<!-- 레이아웃 -->
+<div class="layout">
+
+<!-- 사이드바 -->
+<div class="sidebar">
+  <div class="sb-logo">
+    <div class="sb-year">2026</div>
+    <h1>경남프라자<br>관리시스템</h1>
+    <p>우리은행 1005-902-946812</p>
+  </div>
+  <div class="sb-menu">
+    <div class="sb-section">메인</div>
+    <button class="sb-item active" onclick="nav('dashboard')"><span class="ico">📊</span><span>대시보드</span></button>
+    <div class="sb-section">관리비</div>
+    <button class="sb-item" onclick="nav('units')"><span class="ico">🏠</span><span>호실별 관리비</span></button>
+    <button class="sb-item" onclick="nav('input')"><span class="ico">✏️</span><span>월별 입력·편집</span></button>
+    <div class="sb-section">수도·전기·고정부과</div>
+    <button class="sb-item" onclick="nav('water')"><span class="ico">💧</span><span>수도계량기</span></button>
+    <button class="sb-item" onclick="nav('elec')"><span class="ico">⚡</span><span>전기요금</span></button>
+    <button class="sb-item" onclick="nav('fixed')"><span class="ico">📋</span><span>고정부과 설정</span></button>
+    <div class="sb-section">미납·정산</div>
+    <button class="sb-item" onclick="nav('unpaid')"><span class="ico">⚠️</span><span>미납 현황</span></button>
+    <button class="sb-item" onclick="nav('interim')"><span class="ico">🔢</span><span>중간정산</span></button>
+    <div class="sb-section">고지서</div>
+    <button class="sb-item" onclick="nav('receipt')"><span class="ico">🧾</span><span>고지서 출력</span></button>
+    <div class="sb-section">호실·임차인</div>
+    <button class="sb-item" onclick="nav('roomMgr')"><span class="ico">🚪</span><span>호실 관리</span></button>
+    <button class="sb-item" onclick="nav('manualReceipt')"><span class="ico">✍️</span><span>수동 고지서</span></button>
+    <div class="sb-section">기록·분석</div>
+    <button class="sb-item" onclick="nav('annual')"><span class="ico">📅</span><span>연간 히스토리</span></button>
+    <button class="sb-item" onclick="nav('repairs')"><span class="ico">🔧</span><span>수리내역</span></button>
+    <button class="sb-item" onclick="nav('gason')"><span class="ico">💰</span><span>가수금</span></button>
+  </div>
+  <div class="sb-bottom">T. 031-422-7474<br>경남프라자 관리단</div>
+</div>
+
+<!-- 메인 -->
+<div class="main">
+<div class="topbar">
+  <div>
+    <span class="tb-title" id="topTitle">📊 대시보드</span>
+    <span class="tb-sub" id="topSub"></span>
+  </div>
+  <div class="tb-actions">
+    <select class="month-sel" id="globalMonth" onchange="onMonthChange()">
+      <option value="1">1월</option><option value="2">2월</option>
+      <option value="3" selected>3월</option><option value="4">4월</option>
+      <option value="5">5월</option><option value="6">6월</option>
+      <option value="7">7월</option><option value="8">8월</option>
+      <option value="9">9월</option><option value="10">10월</option>
+      <option value="11">11월</option><option value="12">12월</option>
+    </select>
+    <button class="btn btn-outline btn-sm" onclick="saveData()">💾 저장</button>
+    <button class="btn btn-primary btn-sm" onclick="nav('receipt')">🧾 고지서</button>
+  </div>
+</div>
+
+<div class="content">
+
+<!-- ===== 대시보드 ===== -->
+<div id="sec-dashboard" class="section active">
+  <div class="grid4" id="dashStats" style="margin-bottom:16px"></div>
+  <div id="dashAlerts"></div>
+  <div class="grid2">
+    <div class="card">
+      <div class="card-hdr"><div class="card-title">📈 2026년 월별 총관리비</div></div>
+      <div class="bar-chart" id="dashBar"></div>
+      <div style="display:flex;gap:4px;padding:2px 0 0;justify-content:space-between">
+        <span id="barMonthLabels" style="display:contents"></span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-hdr"><div class="card-title">🏠 이달 호실 현황</div></div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>호실</th><th class="r">당월관리비</th><th class="r">청구액</th><th>상태</th></tr></thead>
+          <tbody id="dashUnitTbl"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 호실별 관리비 ===== -->
+<div id="sec-units" class="section">
+  <div class="card">
+    <div class="card-hdr">
+      <div class="card-title">🏠 호실별 관리비 명세</div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-outline btn-sm" onclick="nav('receipt')">🧾 고지서 출력</button>
+      </div>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>호실</th><th>지분율</th>
+            <th class="r">공용전기</th><th class="r">공용수도</th><th class="r">전용수도</th>
+            <th class="r">고정부과</th><th class="r">공용합계</th>
+            <th class="r">당월관리비</th><th class="r">청구액</th><th>납부</th><th>처리</th>
+          </tr>
+        </thead>
+        <tbody id="unitsTbody"></tbody>
+        <tfoot id="unitsTfoot"></tfoot>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 월별 입력·편집 ===== -->
+<div id="sec-input" class="section">
+  <div class="alert blue"><span class="alert-ico">ℹ️</span><div>공용전기·수도 총액 입력 시 지분율로 자동 배분됩니다. 개별 항목도 직접 수정 가능합니다.</div></div>
+  <div class="card">
+    <div class="card-hdr"><div class="card-title">⚙️ 공용비용 자동배분</div></div>
+    <div class="form-row">
+      <div class="fg"><label>공용전기 총액 (원)</label><input type="number" id="inp_elec" placeholder="예: 168360" oninput="autoDistribute()"></div>
+      <div class="fg"><label>공용수도 총액 (원)</label><input type="number" id="inp_pw" placeholder="예: 184730" oninput="autoDistribute()"></div>
+    </div>
+    <div class="form-row" id="fixedInputs"></div>
+    <div style="display:flex;gap:8px;margin-top:8px">
+      <button class="btn btn-primary btn-sm" onclick="autoDistribute()">🔄 자동배분</button>
+      <button class="btn btn-success btn-sm" onclick="saveCurrentMonth()">💾 저장</button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-hdr"><div class="card-title">📝 호실별 개별편집</div></div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>호실</th><th class="r">공용전기</th><th class="r">공용수도</th><th class="r">전용수도</th><th class="r">고정부과</th><th class="r">당월총합</th><th class="r">청구금액</th><th>납부메모</th></tr></thead>
+        <tbody id="inputTbody"></tbody>
+        <tfoot id="inputTfoot"></tfoot>
+      </table>
+    </div>
+    <div style="margin-top:10px;display:flex;gap:8px">
+      <button class="btn btn-success btn-sm" onclick="saveCurrentMonth()">💾 저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 수도계량기 ===== -->
+<div id="sec-water" class="section">
+  <div class="alert blue"><span class="alert-ico">💧</span><div><strong>계산 방식:</strong> 전용수도 요금 = 사용량(톤) × (월 총수도요금 ÷ 총사용량) → 10원 단위 반올림</div></div>
+  <div class="card">
+    <div class="card-hdr"><div class="card-title">💧 월별 수도 정보 및 계량기 입력</div></div>
+    <div class="form-row">
+      <div class="fg"><label>수도 총청구요금 (원)</label><input type="number" id="w_totalFee" oninput="calcWater()"></div>
+      <div class="fg"><label>총 사용량 (톤)</label><input type="number" id="w_totalTons" oninput="calcWater()"></div>
+      <div class="fg"><label>공용수도요금 (원)</label><input type="number" id="w_pubWater" oninput="calcWater()"></div>
+    </div>
+    <div id="waterRateInfo" style="font-size:12px;color:#666;margin-bottom:12px"></div>
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr><th>호실</th><th class="r">전월계량기</th><th class="r">당월계량기</th><th class="r">사용량(톤)</th><th class="r">계산요금</th><th class="r">확정요금(10원단위)</th><th>관리비 반영</th></tr>
+        </thead>
+        <tbody id="waterTbody"></tbody>
+        <tfoot id="waterTfoot"></tfoot>
+      </table>
+    </div>
+    <div style="margin-top:10px;display:flex;gap:8px">
+      <button class="btn btn-success btn-sm" onclick="applyWater()">✅ 이달 전용수도 반영</button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-hdr"><div class="card-title">📊 전체 계량기 이력</div></div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>호실</th><th class="r">전월말</th><th class="r">1월</th><th class="r">2월</th><th class="r">3월</th><th class="r">4월</th><th class="r">5월</th><th class="r">6월</th><th class="r">7월</th><th class="r">8월</th><th class="r">9월</th><th class="r">10월</th><th class="r">11월</th><th class="r">12월</th></tr></thead>
+        <tbody id="meterHistTbl"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 전기요금 ===== -->
+<div id="sec-elec" class="section">
+  <div class="card">
+    <div class="card-hdr"><div class="card-title">⚡ 월별 전기요금 관리</div></div>
+    <div class="alert blue"><span class="alert-ico">ℹ️</span><div>매월 한전 청구요금을 입력하면 지분율에 따라 각 호실에 배분됩니다. 입력 후 <strong>저장</strong>을 눌러주세요.</div></div>
+    <div class="tbl-wrap" style="max-width:400px">
+      <table>
+        <thead><tr><th>월</th><th class="r">총 전기요금 (원)</th><th>비고</th></tr></thead>
+        <tbody id="elecTbody"></tbody>
+      </table>
+    </div>
+    <div style="margin-top:10px">
+      <button class="btn btn-success btn-sm" onclick="saveElec()">💾 저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 미납현황 ===== -->
+<div id="sec-unpaid" class="section">
+  <div class="grid3" id="unpaidStats" style="margin-bottom:16px"></div>
+  <div class="card">
+    <div class="card-hdr">
+      <div class="card-title">⚠️ 호실별 미납 현황</div>
+      <button class="btn btn-outline btn-sm" onclick="addUnpaidSnapshot()">📸 현재 미납 스냅샷 저장</button>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>호실</th><th class="r">당월관리비</th><th class="r">이월미납액</th><th class="r">연체료</th><th class="r">청구합계</th><th>상태</th><th>납부처리</th><th>메모</th></tr></thead>
+        <tbody id="unpaidTbody"></tbody>
+      </table>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-hdr"><div class="card-title">📋 납부 히스토리</div><span style="font-size:12px;color:#888">호실별 납부/미납 전체 이력</span></div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>일시</th><th>호실</th><th>월</th><th class="r">당월금액</th><th class="r">이월미납</th><th class="r">납부금액</th><th>처리</th><th>메모</th></tr></thead>
+        <tbody id="payHistTbody"></tbody>
+      </table>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-hdr"><div class="card-title">📅 월별 미납 이력</div></div>
+    <div class="tbl-wrap">
+      <table id="unpaidHistTbl">
+        <thead><tr><th>기간</th><th>회차</th>
+          <th class="r">101호</th><th class="r">102호</th><th class="r">103호</th><th class="r">104호</th><th class="r">105호</th><th class="r">106호</th><th class="r">107호</th><th class="r">108호</th>
+          <th class="r">201호</th><th class="r">202호</th><th class="r">203호</th><th class="r">301호</th><th class="r">302호</th><th class="r">401호</th><th class="r">402호</th><th class="r">501호</th>
+        </tr></thead>
+        <tbody id="unpaidHistTbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 중간정산 ===== -->
+<div id="sec-interim" class="section">
+  <div class="alert blue"><span class="alert-ico">ℹ️</span><div><strong>중간정산 공식:</strong> 최근 3개월 평균 ÷ 30일 × 정산일수 → 5% 가산 = 청구액</div></div>
+  <div class="card">
+    <div class="card-hdr"><div class="card-title">🔢 중간정산 계산기</div></div>
+    <div class="form-row">
+      <div class="fg"><label>호실</label>
+        <select id="int_unit">
+          <option>101호</option><option>102호</option><option>103호</option><option>104호</option>
+          <option>105호</option><option>106호</option><option>107호</option><option>108호</option>
+          <option>201호</option><option>202호</option><option>203호</option><option>301호</option>
+          <option>302호</option><option>401호</option><option>402호</option><option>501호</option>
+        </select>
+      </div>
+      <div class="fg"><label>정산일</label><input type="date" id="int_date"></div>
+      <div class="fg"><label>정산일수</label><input type="number" id="int_days" placeholder="예: 15" oninput="calcInterim()"></div>
+    </div>
+    <div class="form-row">
+      <div class="fg"><label>최근월1 관리비</label><input type="number" id="int_m1" oninput="calcInterim()"></div>
+      <div class="fg"><label>최근월2 관리비</label><input type="number" id="int_m2" oninput="calcInterim()"></div>
+      <div class="fg"><label>최근월3 관리비</label><input type="number" id="int_m3" oninput="calcInterim()"></div>
+    </div>
+    <div id="interimResult" style="margin-top:6px"></div>
+    <div style="margin-top:12px;display:flex;gap:8px">
+      <button class="btn btn-primary btn-sm" onclick="calcInterim()">🔄 계산</button>
+      <button class="btn btn-success btn-sm" onclick="printInterimReceipt()">🧾 중간정산 고지서 출력</button>
+      <button class="btn btn-outline btn-sm" onclick="saveInterim()">💾 기록저장</button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-hdr"><div class="card-title">📜 중간정산 이력</div></div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>호실</th><th>정산일</th><th class="r">월1</th><th class="r">월2</th><th class="r">월3</th><th class="r">평균</th><th class="r">일할</th><th class="r">일수</th><th class="r">소계</th><th class="r">5%가산</th><th class="r">청구액</th><th>비고</th></tr></thead>
+        <tbody id="interimHistTbl"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 고지서 출력 ===== -->
+<div id="sec-receipt" class="section">
+  <div class="card">
+    <div class="card-hdr"><div class="card-title">🧾 고지서 출력 설정</div></div>
+    <div class="form-row">
+      <div class="fg"><label>대상 호실</label>
+        <select id="rcpt_unit" onmousedown="refreshRcptUnits()"><option value="ALL">전체 (모든 호실)</option></select>
+      </div>
+      <div class="fg"><label>납기일</label><input type="date" id="rcpt_duedate"></div>
+      <div class="fg"><label>담당자 메일 (전송용)</label><input type="email" id="rcpt_email" placeholder="manager@example.com"></div>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px">
+      <button class="btn btn-primary" onclick="previewReceipt()">👁️ 미리보기</button>
+      <button class="btn btn-success" onclick="printReceipt()">🖨️ 선택 호실 인쇄</button>
+      <button class="btn btn-success" onclick="printAllReceipts()">🖨️ 전체 일괄 인쇄 (16세대)</button>
+      <button class="btn btn-outline" onclick="downloadPDF()">📄 PDF로 저장 (인쇄→PDF)</button>
+      <button class="btn btn-outline" onclick="sendEmail()">📧 메일 전송</button>
+    </div>
+  </div>
+  <div id="receiptPreview"></div>
+</div>
+
+<!-- ===== 수리내역 ===== -->
+<div id="sec-repairs" class="section">
+  <div class="card">
+    <div class="card-hdr"><div class="card-title">➕ 수리내역 추가</div></div>
+    <div class="form-row">
+      <div class="fg"><label>날짜</label><input type="date" id="rep_date"></div>
+      <div class="fg"><label>내용</label><input type="text" id="rep_desc" placeholder="수리 내용"></div>
+      <div class="fg"><label>금액 (원)</label><input type="number" id="rep_amt"></div>
+      <div class="fg"><label>비고</label><input type="text" id="rep_note"></div>
+    </div>
+    <button class="btn btn-success btn-sm" onclick="addRepair()">➕ 추가</button>
+  </div>
+  <div class="card">
+    <div class="card-hdr"><div class="card-title">🔧 수리내역 목록</div></div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>날짜</th><th>내용</th><th class="r">금액</th><th>비고</th><th></th></tr></thead>
+        <tbody id="repairsTbl"></tbody>
+        <tfoot id="repairsFoot"></tfoot>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 가수금 ===== -->
+<div id="sec-gason" class="section">
+  <div class="card">
+    <div class="card-hdr"><div class="card-title">➕ 가수금 추가</div></div>
+    <div class="form-row">
+      <div class="fg"><label>일자</label><input type="text" id="gs_date" placeholder="2026.01.01"></div>
+      <div class="fg"><label>내용</label><input type="text" id="gs_desc" placeholder="내용 입력"></div>
+      <div class="fg"><label>금액 (+입금/-반환)</label><input type="number" id="gs_amt" placeholder="예: -1000000"></div>
+    </div>
+    <button class="btn btn-success btn-sm" onclick="addGason()">➕ 추가</button>
+  </div>
+  <div class="card">
+    <div class="card-hdr"><div class="card-title">💰 가수금 내역</div></div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>일자</th><th>내용</th><th class="r">금액</th><th class="r">잔액</th><th></th></tr></thead>
+        <tbody id="gasonTbl"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 연간 히스토리 ===== -->
+<div id="sec-annual" class="section">
+  <div class="alert blue"><span class="alert-ico">ℹ️</span>
+    <div>전체 호실 × 12개월 납부현황. 납부완료=<span style="background:#fff9c4;padding:0 6px;border-radius:3px">노란배경</span>, 미납=<span style="color:#c62828;font-weight:700">빨간글씨</span>. 연체료: ROUND(금액×0.02325×미납개월수, -1)</div>
+  </div>
+  <div class="card" style="padding:0">
+    <div style="padding:14px 18px;border-bottom:1px solid var(--border);display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+      <span style="font-weight:700;color:var(--navy)">📅 2026년 전체 납부 현황</span>
+      <button class="btn btn-outline btn-sm" onclick="renderAnnual()">🔄 새로고침</button>
+      <button class="btn btn-outline btn-sm" onclick="window.print()">🖨️ 인쇄</button>
+    </div>
+    <div style="overflow-x:auto">
+      <table id="annualTable" style="font-size:12px;min-width:1200px">
+        <thead id="annualThead"></thead>
+        <tbody id="annualTbody"></tbody>
+        <tfoot id="annualTfoot"></tfoot>
+      </table>
+    </div>
+  </div>
+  <div class="card" style="margin-top:14px">
+    <div class="card-hdr"><div class="card-title">📊 호실별 연체료 계산</div>
+      <span style="font-size:11px;color:#888">= ROUND(미납액 × 0.02325 × 미납개월수, -1)</span>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>호실</th><th class="r">미납 원금</th><th class="r">미납 개월수</th><th class="r">연체료</th><th class="r">합계 청구</th><th>최근 이력</th></tr></thead>
+        <tbody id="penaltyTbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 호실 관리 ===== -->
+<div id="sec-roomMgr" class="section">
+  <div class="alert blue"><span class="alert-ico">ℹ️</span><div>호실을 추가·삭제하거나 임차인 정보를 관리합니다. 비활성 호실은 해당 월 관리비 계산에서 제외됩니다.</div></div>
+  <div class="card">
+    <div class="card-hdr"><div class="card-title">➕ 호실 추가</div></div>
+    <div class="form-row">
+      <div class="fg"><label>호실명</label><input type="text" id="rm_name" placeholder="예: 109호"></div>
+      <div class="fg"><label>지분율 (%)</label><input type="number" id="rm_ratio" placeholder="예: 3.2609" step="0.0001"></div>
+      <div class="fg"><label>전용수도 계량기</label>
+        <select id="rm_meter"><option value="0">없음</option><option value="1">있음</option></select>
+      </div>
+      <div class="fg"><label>임차인명</label><input type="text" id="rm_tenant" placeholder="홍길동"></div>
+      <div class="fg"><label>연락처</label><input type="text" id="rm_tel" placeholder="010-0000-0000"></div>
+    </div>
+    <button class="btn btn-success btn-sm" onclick="addRoom()">➕ 호실 추가</button>
+  </div>
+  <div class="card">
+    <div class="card-hdr"><div class="card-title">🚪 호실 목록</div><span style="font-size:12px;color:#888">비활성 호실은 관리비 계산에서 제외됩니다</span></div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>호실</th><th>지분율</th><th>계량기</th><th>임차인</th><th>연락처</th><th>입주일</th><th>상태</th><th>처리</th></tr></thead>
+        <tbody id="roomTbody"></tbody>
+      </table>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-hdr"><div class="card-title">📋 임차인 변경 이력</div></div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>호실</th><th>변경일</th><th>이전 임차인</th><th>신규 임차인</th><th>사유</th></tr></thead>
+        <tbody id="tenantHistTbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 수동 고지서 ===== -->
+<div id="sec-manualReceipt" class="section">
+  <div class="alert blue"><span class="alert-ico">✍️</span><div>중간정산·퇴실·특별청구 등 항목과 금액을 직접 입력하여 고지서를 출력합니다.</div></div>
+  <div class="card">
+    <div class="card-hdr"><div class="card-title">✍️ 수동 고지서 작성</div></div>
+    <div class="form-row">
+      <div class="fg"><label>호실명 (직접입력)</label><input type="text" id="mr_unit" placeholder="예: 302호"></div>
+      <div class="fg"><label>고지서 제목</label><input type="text" id="mr_title" placeholder="예: 중간정산 고지서"></div>
+      <div class="fg"><label>기준 기간</label><input type="text" id="mr_period" placeholder="예: 2026년 4월 1~15일"></div>
+      <div class="fg"><label>납기일</label><input type="date" id="mr_due"></div>
+    </div>
+    <div class="card-hdr" style="margin-top:8px"><div class="card-title" style="font-size:13px">항목별 금액 입력</div>
+      <button class="btn btn-outline btn-sm" onclick="addManualItem()">➕ 항목 추가</button>
+    </div>
+    <div id="manualItems">
+      <div class="manual-item form-row" style="align-items:center;gap:8px">
+        <div class="fg" style="flex:2"><label>항목명</label><input type="text" class="mr-label" placeholder="예: 관리비(일할)"></div>
+        <div class="fg" style="flex:1"><label>금액(원)</label><input type="number" class="mr-amt" placeholder="0" oninput="calcManualTotal()"></div>
+        <div style="padding-top:20px"><button class="btn btn-danger btn-sm" onclick="removeManualItem(this)">✕</button></div>
+      </div>
+    </div>
+    <div style="background:#1a237e;color:#fff;border-radius:8px;padding:14px;margin-top:12px;display:flex;justify-content:space-between;align-items:center">
+      <span style="font-size:14px;font-weight:700">합계 청구금액</span>
+      <span style="font-size:22px;font-weight:900" id="manualTotal">0원</span>
+    </div>
+    <div class="fg" style="margin-top:10px"><label>비고 (고지서 하단 표시)</label>
+      <textarea id="mr_note" rows="2" placeholder="예: 위 금액은 중간정산 금액입니다. 문의: 031-422-7474"></textarea>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
+      <button class="btn btn-primary" onclick="previewManualReceipt()">👁️ 미리보기</button>
+      <button class="btn btn-success" onclick="printManualReceipt()">🖨️ 인쇄 / PDF</button>
+      <button class="btn btn-outline" onclick="saveManualDraft()">💾 임시저장</button>
+    </div>
+  </div>
+  <div id="manualReceiptPreview" style="margin-top:14px"></div>
+  <div class="card" style="margin-top:14px">
+    <div class="card-hdr"><div class="card-title">📂 저장된 수동 고지서</div></div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>호실</th><th>제목</th><th>기간</th><th class="r">금액</th><th>작성일</th><th></th></tr></thead>
+        <tbody id="manualDraftTbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 고정부과 설정 ===== -->
+<div id="sec-fixed" class="section">
+  <div class="card">
+    <div class="card-hdr"><div class="card-title">📋 고정부과 항목 설정</div></div>
+    <div class="alert blue"><span class="alert-ico">ℹ️</span><div>고정부과 항목은 지분율에 따라 각 호실에 배분됩니다. 변경 후 저장을 눌러주세요.</div></div>
+    <div id="fixedSettingForm"></div>
+    <div style="margin-top:12px;display:flex;gap:8px">
+      <button class="btn btn-success" onclick="saveFixed()">💾 저장</button>
+      <span id="fixedTotal" style="align-self:center;font-weight:700;font-size:14px;color:var(--navy)"></span>
+    </div>
+  </div>
+</div>
+
+</div><!-- /content -->
+</div><!-- /main -->
+</div><!-- /layout -->
+
+<!-- 모달 -->
+<div id="modal" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <div class="modal-title" id="modalTitle"></div>
+    <div id="modalBody"></div>
+    <div class="modal-footer" id="modalFooter"></div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// 상수 & 기초 데이터
+// ============================================================
+const UNITS=['101호','102호','103호','104호','105호','106호','107호','108호',
+             '201호','202호','203호','301호','302호','401호','402호','501호'];
+const RATIOS={
+  '101호':0.03260869565217391,'102호':0.03260869565217391,
+  '103호':0.03260869565217391,'104호':0.03260869565217391,
+  '105호':0.032035329136778416,'106호':0.03542673107890499,
+  '107호':0.03542673107890499,'108호':0.03542673107890499,
+  '201호':0.05284731371687893,'202호':0.05284731371687893,
+  '203호':0.11518567315668765,'301호':0.10569462743375786,
+  '302호':0.09020153223051773,'401호':0.07476943346508563,
+  '402호':0.09004294149221685,'501호':0.14966085980578733
+};
+const FLOOR={'101호':1,'102호':1,'103호':1,'104호':1,'105호':1,'106호':1,'107호':1,'108호':1,
+             '201호':2,'202호':2,'203호':2,'301호':3,'302호':3,'401호':4,'402호':4,'501호':5};
+const FCLS=['','f1','f2','f3','f4','f5'];
+// 전용수도 계량기 있는 호실
+const METER_UNITS=['101호','102호','104호','106호','107호','108호'];
+
+// ============================================================
+// 로컬 상태 (localStorage에서 불러옴)
+// ============================================================
+function defaultData(){
+  return {
+    fixed:{사무용역:450000,전기용역:77000,소방용역:110000,'E/V용역':100000,시설유지비:400000,'E/V통신':3700},
+    elec:{1:359440,2:239520,3:168360,4:145490,5:148830,6:155130,7:153470,8:148160,9:141150,10:147070,11:178070,12:294530},
+    water:{
+      1:{total_fee:257060,total_tons:89,pub_fee:187750},
+      2:{total_fee:248250,total_tons:86,pub_fee:181850},
+      3:{total_fee:251130,total_tons:87,pub_fee:184730},
+      4:{total_fee:182840,total_tons:70,pub_fee:99260},
+      5:{total_fee:167280,total_tons:64,pub_fee:78410},
+      6:{total_fee:234740,total_tons:90,pub_fee:148660},
+      7:{total_fee:229550,total_tons:88,pub_fee:151620},
+      8:{total_fee:245120,total_tons:94,pub_fee:148630},
+      9:{total_fee:258090,total_tons:99,pub_fee:185100},
+      10:{total_fee:245120,total_tons:94,pub_fee:166890},
+      11:{total_fee:255490,total_tons:98,pub_fee:187700},
+      12:{total_fee:251310,total_tons:87,pub_fee:176220}
+    },
+    meter:{
+      '101호':[1823,1826,1829,1832,0,0,0,0,0,0,0,0,0],
+      '102호':[265,276,286,296,0,0,0,0,0,0,0,0,0],
+      '104호':[547,551,557,563,0,0,0,0,0,0,0,0,0],
+      '106호':[386,386,386,386,0,0,0,0,0,0,0,0,0],
+      '107호':[8,9,10,10,0,0,0,0,0,0,0,0,0],
+      '108호':[1929,1934,1937,1941,0,0,0,0,0,0,0,0,0]
+    },
+    months:{
+      1:{
+        '101호':{e:11720,pw:6120,priv:8660,common:37200,total:63700,bill:63700,note:''},
+        '102호':{e:11720,pw:6120,priv:31770,common:37200,total:86810,bill:86810,note:''},
+        '103호':{e:11720,pw:6120,priv:0,common:37200,total:55040,bill:55040,note:''},
+        '104호':{e:11720,pw:6120,priv:11550,common:37200,total:66590,bill:66590,note:''},
+        '105호':{e:11510,pw:6010,priv:0,common:36540,total:54060,bill:54060,note:''},
+        '106호':{e:12730,pw:6650,priv:0,common:40410,total:59790,bill:118200,note:'미납포함'},
+        '107호':{e:12730,pw:6650,priv:2890,common:40410,total:62680,bill:62680,note:''},
+        '108호':{e:12730,pw:6650,priv:14440,common:40410,total:74230,bill:74230,note:''},
+        '201호':{e:19000,pw:9920,priv:0,common:60280,total:89200,bill:89200,note:''},
+        '202호':{e:19000,pw:9920,priv:0,common:60280,total:89200,bill:89200,note:''},
+        '203호':{e:41400,pw:21630,priv:0,common:131390,total:194420,bill:194420,note:''},
+        '301호':{e:37990,pw:19840,priv:0,common:120570,total:178400,bill:178400,note:''},
+        '302호':{e:32420,pw:16940,priv:0,common:102890,total:152250,bill:152250,note:''},
+        '401호':{e:26880,pw:14040,priv:0,common:85290,total:126210,bill:126210,note:''},
+        '402호':{e:32370,pw:16910,priv:0,common:102710,total:151990,bill:300460,note:'미납포함'},
+        '501호':{e:53790,pw:28100,priv:0,common:170720,total:252610,bill:252610,note:''}
+      },
+      2:{
+        '101호':{e:7810,pw:5930,priv:8660,common:37200,total:59600,bill:59600,note:''},
+        '102호':{e:7810,pw:5930,priv:28870,common:37200,total:79810,bill:79810,note:''},
+        '103호':{e:7810,pw:5930,priv:0,common:37200,total:50940,bill:50940,note:''},
+        '104호':{e:7810,pw:5930,priv:17320,common:37200,total:68260,bill:68260,note:''},
+        '105호':{e:7670,pw:5830,priv:0,common:36540,total:50040,bill:50040,note:''},
+        '106호':{e:8490,pw:6440,priv:0,common:40410,total:55340,bill:55340,note:''},
+        '107호':{e:8490,pw:6440,priv:2890,common:40410,total:58230,bill:58230,note:''},
+        '108호':{e:8490,pw:6440,priv:8660,common:40410,total:64000,bill:64000,note:''},
+        '201호':{e:12660,pw:9610,priv:0,common:60280,total:82550,bill:82550,note:''},
+        '202호':{e:12660,pw:9610,priv:0,common:60280,total:82550,bill:82550,note:''},
+        '203호':{e:27590,pw:20950,priv:0,common:131390,total:179930,bill:179930,note:''},
+        '301호':{e:25320,pw:19220,priv:0,common:120570,total:165110,bill:165110,note:''},
+        '302호':{e:21610,pw:16400,priv:0,common:102890,total:140900,bill:296690,note:'미납포함'},
+        '401호':{e:17910,pw:13600,priv:0,common:85290,total:116800,bill:116800,note:''},
+        '402호':{e:21570,pw:16370,priv:0,common:102710,total:140650,bill:278420,note:'미납포함'},
+        '501호':{e:35850,pw:27220,priv:0,common:170720,total:233790,bill:233790,note:''}
+      },
+      3:{
+        '101호':{e:5490,pw:6020,priv:8660,common:37200,total:57370,bill:57370,note:''},
+        '102호':{e:5490,pw:6020,priv:28870,common:37200,total:77580,bill:77580,note:''},
+        '103호':{e:5490,pw:6020,priv:0,common:37200,total:48710,bill:48710,note:''},
+        '104호':{e:5490,pw:6020,priv:17320,common:37200,total:66030,bill:66030,note:''},
+        '105호':{e:5390,pw:5920,priv:0,common:36540,total:47850,bill:47850,note:''},
+        '106호':{e:5960,pw:6540,priv:0,common:40410,total:52910,bill:52910,note:''},
+        '107호':{e:5960,pw:6540,priv:0,common:40410,total:52910,bill:52910,note:''},
+        '108호':{e:5960,pw:6540,priv:11550,common:40410,total:64460,bill:64460,note:''},
+        '201호':{e:8900,pw:9760,priv:0,common:60280,total:78940,bill:78940,note:''},
+        '202호':{e:8900,pw:9760,priv:0,common:60280,total:78940,bill:78940,note:''},
+        '203호':{e:19390,pw:21280,priv:0,common:131390,total:172060,bill:172060,note:''},
+        '301호':{e:17790,pw:19520,priv:0,common:120570,total:157880,bill:157880,note:''},
+        '302호':{e:15190,pw:16660,priv:0,common:102890,total:134740,bill:438250,note:'미납포함'},
+        '401호':{e:12590,pw:13810,priv:0,common:85290,total:111690,bill:111690,note:''},
+        '402호':{e:15160,pw:16630,priv:0,common:102710,total:134500,bill:278420,note:'미납포함'},
+        '501호':{e:25200,pw:27650,priv:0,common:170720,total:223570,bill:223570,note:''}
+      }
+    },
+    unpaidHist:[
+      {period:'2025.12',counts:{},data:{'302호':{amt:57080,penalty:1330},'402호':{amt:145100,penalty:3370}}},
+      {period:'2026.01',counts:{'302호':2},data:{'302호':{amt:152250,penalty:7080}}},
+      {period:'2026.02',counts:{'302호':1,'402호':1},data:{'302호':{amt:140900,penalty:3280},'402호':{amt:140650,penalty:3270}}}
+    ],
+    rooms:{
+      '101호':{ratio:0.03260869565217391,hasMeter:true,active:true,tenant:'',tel:'',moveIn:''},
+      '102호':{ratio:0.03260869565217391,hasMeter:true,active:true,tenant:'',tel:'',moveIn:''},
+      '103호':{ratio:0.03260869565217391,hasMeter:false,active:true,tenant:'',tel:'',moveIn:''},
+      '104호':{ratio:0.03260869565217391,hasMeter:true,active:true,tenant:'',tel:'',moveIn:''},
+      '105호':{ratio:0.032035329136778416,hasMeter:false,active:true,tenant:'',tel:'',moveIn:''},
+      '106호':{ratio:0.03542673107890499,hasMeter:true,active:true,tenant:'',tel:'',moveIn:''},
+      '107호':{ratio:0.03542673107890499,hasMeter:true,active:true,tenant:'',tel:'',moveIn:''},
+      '108호':{ratio:0.03542673107890499,hasMeter:true,active:true,tenant:'',tel:'',moveIn:''},
+      '201호':{ratio:0.05284731371687893,hasMeter:false,active:true,tenant:'',tel:'',moveIn:''},
+      '202호':{ratio:0.05284731371687893,hasMeter:false,active:true,tenant:'',tel:'',moveIn:''},
+      '203호':{ratio:0.11518567315668765,hasMeter:false,active:true,tenant:'',tel:'',moveIn:''},
+      '301호':{ratio:0.10569462743375786,hasMeter:false,active:true,tenant:'',tel:'',moveIn:''},
+      '302호':{ratio:0.09020153223051773,hasMeter:false,active:true,tenant:'',tel:'',moveIn:''},
+      '401호':{ratio:0.07476943346508563,hasMeter:false,active:true,tenant:'',tel:'',moveIn:''},
+      '402호':{ratio:0.09004294149221685,hasMeter:false,active:true,tenant:'',tel:'',moveIn:''},
+      '501호':{ratio:0.14966085980578733,hasMeter:false,active:true,tenant:'',tel:'',moveIn:''}
+    },
+    tenantHist:[],
+    manualDrafts:[],
+    repairs:[
+      {date:'2023.03.16',desc:'인증서갱신',amt:30000,note:''},
+      {date:'2023.04.03',desc:'화재보험료',amt:47000,note:''},
+      {date:'2023.04.18',desc:'엘리베이터 소방지적사항 개선',amt:200000,note:''},
+      {date:'2023.08.16',desc:'4층 누수 광명유가 수리비',amt:250000,note:''},
+      {date:'2023.10.31',desc:'쌍용엘베 도어PCB기판 교체',amt:700000,note:''},
+      {date:'2023.11.20',desc:'1층화장실',amt:110000,note:''},
+      {date:'2024.05.16',desc:'비젼토탈 4F 방수공사 16.8평',amt:2650000,note:''},
+      {date:'2025.04.09',desc:'1층손잡이2개',amt:127000,note:''},
+      {date:'2026.05.10',desc:'전기배선공사(우행전기,한일기전)',amt:2200000,note:''}
+    ],
+    gason:[
+      {date:'2026',desc:'2026 미반환액계',amt:0},
+      {date:'2026.05.10',desc:'100만원 충전',amt:1000000}
+    ],
+    interimHist:[
+      {unit:'501',date:'2025.04.06',m1:246320,m2:262490,m3:206320,days:37,total:287670,withPct:302050,note:'미납'},
+      {unit:'106',date:'2025.05.04',m1:62130,m2:52170,m3:52170,days:34,total:61530,withPct:64610,note:''},
+      {unit:'107',date:'2025.05.08',m1:62130,m2:49560,m3:49560,days:38,total:66620,withPct:69950,note:''},
+      {unit:'402',date:'2025.07.31',m1:130070,m2:123210,m3:123850,days:31,total:127100,withPct:133460,note:''}
+    ]
+  };
+}
+
+let S = loadData();
+let curMonth = 3;
+
+function loadData(){
+  try{
+    const s=localStorage.getItem('kyungnam2026');
+    if(s) return JSON.parse(s);
+  }catch(e){}
+  return defaultData();
+}
+function saveData(){
+  try{localStorage.setItem('kyungnam2026',JSON.stringify(S));showToast('저장 완료!');}
+  catch(e){showToast('저장 실패 (용량 초과일 수 있음)');}
+}
+function saveCurrentMonth(){saveData();}
+
+// ============================================================
+// 유틸
+// ============================================================
+// 활성 호실 목록 (동적)
+function activeUnits(){
+  if(!S.rooms) return UNITS;
+  return UNITS.filter(u=>!S.rooms[u]||S.rooms[u].active!==false);
+}
+// 호실 지분율 (S.rooms 우선, 없으면 RATIOS)
+function getRatio(u){
+  return S.rooms&&S.rooms[u]?S.rooms[u].ratio:RATIOS[u]||0;
+}
+
+const fmt=n=>Number(n||0).toLocaleString('ko-KR');
+const r10=n=>Math.round(n/10)*10;
+const pill=u=>`<span class="up ${FCLS[FLOOR[u]]}">${u}</span>`;
+const today=()=>{const d=new Date();return `${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')}`;};
+
+function ensureMonth(m){
+  if(S.months[m]) return;
+  const fixed=S.fixed;
+  const fixedTotal=Object.values(fixed).reduce((a,b)=>a+b,0);
+  const elec=S.elec[m]||0;
+  const wi=S.water[m]||{total_fee:0,total_tons:1,pub_fee:0};
+  const rate=wi.total_fee/wi.total_tons;
+  const mdata={};
+  UNITS.forEach(u=>{
+    const r=getRatio(u);
+    const priv=0;
+    const total=r10(elec*r+wi.pub_fee*r+priv+fixedTotal*r);
+    mdata[u]={e:r10(elec*r),pw:r10(wi.pub_fee*r),priv:0,common:r10((elec+wi.pub_fee+fixedTotal)*r),total,bill:total,note:''};
+  });
+  S.months[m]=mdata;
+}
+
+function calcFixed(u,m){
+  const fixedTotal=Object.values(S.fixed).reduce((a,b)=>a+b,0);
+  const d=S.months[m][u];
+  return d.total-d.e-d.pw-d.priv;
+}
+
+function showToast(msg){
+  const t=document.createElement('div');
+  t.style.cssText='position:fixed;bottom:20px;right:20px;background:#333;color:#fff;padding:10px 18px;border-radius:8px;font-size:13px;z-index:9999;animation:fadein .2s';
+  t.textContent=msg;
+  document.body.appendChild(t);
+  setTimeout(()=>t.remove(),2000);
+}
+
+// ============================================================
+// 네비게이션
+// ============================================================
+const SECTION_TITLES={
+  dashboard:'📊 대시보드',units:'🏠 호실별 관리비',input:'✏️ 월별 입력·편집',
+  roomMgr:'🚪 호실 관리',manualReceipt:'✍️ 수동 고지서',annual:'📅 연간 히스토리',
+  water:'💧 수도계량기',elec:'⚡ 전기요금',unpaid:'⚠️ 미납 현황',
+  interim:'🔢 중간정산',receipt:'🧾 고지서 출력',repairs:'🔧 수리내역',
+  gason:'💰 가수금',fixed:'📋 고정부과 설정'
+};
+function nav(id){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.sb-item').forEach(b=>b.classList.remove('active'));
+  document.getElementById('sec-'+id).classList.add('active');
+  document.querySelectorAll('.sb-item').forEach(b=>{
+    if(b.getAttribute('onclick')&&b.getAttribute('onclick').includes("'"+id+"'")) b.classList.add('active');
+  });
+  document.getElementById('topTitle').textContent=SECTION_TITLES[id]||id;
+  const m=curMonth;
+  document.getElementById('topSub').textContent=`2026년 ${m}월`;
+  renderSection(id);
+}
+
+function onMonthChange(){
+  curMonth=parseInt(document.getElementById('globalMonth').value);
+  const active=document.querySelector('.section.active');
+  if(active){
+    const id=active.id.replace('sec-','');
+    document.getElementById('topSub').textContent=`2026년 ${curMonth}월`;
+    renderSection(id);
+  }
+}
+
+function renderSection(id){
+  ensureMonth(curMonth);
+  if(id==='dashboard') renderDashboard();
+  else if(id==='units') renderUnits();
+  else if(id==='input') renderInput();
+  else if(id==='water') renderWater();
+  else if(id==='elec') renderElec();
+  else if(id==='unpaid') renderUnpaid();
+  else if(id==='interim') renderInterim();
+  else if(id==='receipt') renderReceiptPreview();
+  else if(id==='annual') renderAnnual();
+  else if(id==='roomMgr') renderRoomMgr();
+  else if(id==='manualReceipt') renderManualReceipt();
+  else if(id==='repairs') renderRepairs();
+  else if(id==='gason') renderGason();
+  else if(id==='fixed') renderFixed();
+}
+
+// ============================================================
+// 대시보드
+// ============================================================
+function renderDashboard(){
+  const m=curMonth;
+  const mdata=S.months[m];
+  let totTotal=0,totUnpaid=0,unpaidCnt=0;
+  activeUnits().forEach(u=>{const d=mdata[u];if(!d)return;totTotal+=d.total;if(d.bill>d.total){unpaidCnt++;totUnpaid+=d.bill-d.total;}});
+
+  document.getElementById('dashStats').innerHTML=`
+    <div class="stat blue"><div class="stat-label">${m}월 총관리비</div><div class="stat-val">${fmt(totTotal)}</div><div class="stat-sub">원 (16세대)</div></div>
+    <div class="stat amber"><div class="stat-label">전체 세대</div><div class="stat-val">16</div><div class="stat-sub">세대</div></div>
+    <div class="stat red"><div class="stat-label">미납 세대</div><div class="stat-val">${unpaidCnt}</div><div class="stat-sub">세대</div></div>
+    <div class="stat red"><div class="stat-label">미납 합계</div><div class="stat-val">${fmt(totUnpaid)}</div><div class="stat-sub">원</div></div>
+  `;
+
+  let alerts='';
+  activeUnits().forEach(u=>{const d=mdata[u];if(!d)return;if(d.bill>d.total){const unp=d.bill-d.total;alerts+=`<div class="alert red"><span class="alert-ico">🚨</span><div><strong>${u}</strong> — 당월 ${fmt(d.total)}원 + 미납·연체 ${fmt(unp)}원 = <strong>청구 ${fmt(d.bill)}원</strong></div></div>`;}});
+  document.getElementById('dashAlerts').innerHTML=alerts;
+
+  // 바 차트
+  const months=[1,2,3,4,5,6,7,8,9,10,11,12];
+  const totals=months.map(mn=>{
+    if(!S.months[mn]) return 0;
+    return activeUnits().reduce((s,u)=>s+(S.months[mn][u]?.total||0),0);
+  });
+  const maxV=Math.max(...totals.filter(v=>v>0),1);
+  document.getElementById('dashBar').innerHTML=months.map((mn,i)=>{
+    const v=totals[i];
+    if(v===0) return `<div class="bc-item"><div class="bc-bar" style="height:4px;opacity:.2;cursor:default"></div><div class="bc-lbl">${mn}월</div></div>`;
+    const h=Math.max(8,Math.round(v/maxV*90));
+    const col=mn===m?'var(--navy)':'var(--navy3)';
+    return `<div class="bc-item"><div class="bc-val">${fmt(Math.round(v/10000))}만</div><div class="bc-bar" style="height:${h}px;background:${col}" onclick="document.getElementById('globalMonth').value=${mn};onMonthChange()" title="${mn}월: ${fmt(v)}원"></div><div class="bc-lbl">${mn}월</div></div>`;
+  }).join('');
+
+  let rows='';
+  activeUnits().forEach(u=>{
+    const d=mdata[u];if(!d)return;
+    const isPaid=d.bill<=d.total;
+    rows+=`<tr class="${isPaid?'':'unpaid-row'}"><td>${pill(u)}</td><td class="r">${fmt(d.total)}</td><td class="r">${isPaid?fmt(d.bill):`<strong style="color:var(--red)">${fmt(d.bill)}</strong>`}</td><td><span class="badge ${isPaid?'ok':'ng'}">${isPaid?'완납':'미납'}</span></td></tr>`;
+  });
+  document.getElementById('dashUnitTbl').innerHTML=rows;
+}
+
+// ============================================================
+// 호실별 관리비
+// ============================================================
+function renderUnits(){
+  const m=curMonth;const mdata=S.months[m];
+  let rows='',se=0,spw=0,spriv=0,st=0;
+  activeUnits().forEach(u=>{
+    const d=mdata[u];
+    const fixed=d.total-d.e-d.pw-d.priv;
+    const isPaid=d.bill<=d.total;
+    se+=d.e;spw+=d.pw;spriv+=d.priv;st+=d.total;
+    const lastPayU=(S.payHist||[]).slice().reverse().find(h=>h.unit===u&&h.month===m);
+    const payDateStr=lastPayU&&isPaid?lastPayU.dt:'';
+    // 청구액 셀 - 납부상태 핵심 표시
+    const billCell=isPaid
+      ?`<span class="paid-cell">${fmt(d.bill)}</span>${payDateStr?`<br><span style="font-size:10px;color:#888">${payDateStr}</span>`:''}`
+      :`<span class="unpaid-cell">${fmt(d.bill)}</span>`;
+    // 납부상태 배지 - 크고 명확하게
+    const statusBadge=isPaid
+      ?`<span class="status-paid">✓ 완납</span>`
+      :`<span class="status-unpaid">✕ 미납</span>`;
+    // 처리 버튼 - 작고 임팩트 약하게
+    const payBtnU=isPaid
+      ?`<button class="pay-action-btn to-unpaid" onclick="markUnpaid(${m},'${u}')">↩ 미납처리</button>`
+      :`<button class="pay-action-btn to-paid" onclick="markPaid(${m},'${u}')">완납처리</button>`;
+    rows+=`<tr class="${isPaid?'':'unpaid-row'}">
+      <td>${pill(u)}</td>
+      <td style="font-size:11px;color:#888">${(getRatio(u)*100).toFixed(4)}%</td>
+      <td class="r">${fmt(d.e)}</td><td class="r">${fmt(d.pw)}</td>
+      <td class="r">${d.priv?fmt(d.priv):'-'}</td>
+      <td class="r">${fmt(fixed)}</td>
+      <td class="r">${fmt(d.common||d.e+d.pw+fixed)}</td>
+      <td class="r"><strong>${fmt(d.total)}</strong></td>
+      <td class="r">${billCell}</td>
+      <td style="text-align:center">${statusBadge}</td>
+      <td style="text-align:center">${payBtnU}</td>
+    </tr>`;
+  });
+  document.getElementById('unitsTbody').innerHTML=rows;
+  document.getElementById('unitsTfoot').innerHTML=`<tr><td colspan="2"><strong>합계</strong></td><td class="r">${fmt(se)}</td><td class="r">${fmt(spw)}</td><td class="r">${fmt(spriv)}</td><td colspan="2"></td><td class="r"><strong>${fmt(st)}</strong></td><td colspan="2"></td></tr>`;
+}
+
+// ============================================================
+// 월별 입력·편집
+// ============================================================
+function renderInput(){
+  const m=curMonth;
+  const wi=S.water[m]||{};
+  document.getElementById('inp_elec').value=S.elec[m]||'';
+  document.getElementById('inp_pw').value=wi.pub_fee||'';
+  // 고정부과 입력
+  const fixedHtml=Object.entries(S.fixed).map(([k,v])=>`<div class="fg"><label>${k} (원)</label><input type="number" id="fi_${k}" value="${v}" oninput="autoDistribute()"></div>`).join('');
+  document.getElementById('fixedInputs').innerHTML=fixedHtml;
+  renderInputTable(m);
+}
+
+function autoDistribute(){
+  const m=curMonth;
+  const elec=parseFloat(document.getElementById('inp_elec').value)||0;
+  const pw=parseFloat(document.getElementById('inp_pw').value)||0;
+  const fixedKeys=Object.keys(S.fixed);
+  let fixedTotal=0;
+  fixedKeys.forEach(k=>{
+    const v=parseFloat(document.getElementById('fi_'+k)?.value)||0;
+    S.fixed[k]=v;fixedTotal+=v;
+  });
+  activeUnits().forEach(u=>{
+    const r=getRatio(u);
+    const d=S.months[m][u];if(!d)return;
+    d.e=r10(elec*r);d.pw=r10(pw*r);
+    d.common=r10((elec+pw+fixedTotal)*r);
+    d.total=r10(elec*r+pw*r+d.priv+fixedTotal*r);
+    if(d.bill<d.total) d.bill=d.total;
+  });
+  renderInputTable(m);
+}
+
+function renderInputTable(m){
+  let rows='',se=0,spw=0,spriv=0,st=0;
+  activeUnits().forEach(u=>{
+    const d=S.months[m][u];
+    const fixed=d.total-d.e-d.pw-d.priv;
+    se+=d.e;spw+=d.pw;spriv+=d.priv;st+=d.total;
+    rows+=`<tr>
+      <td>${pill(u)}</td>
+      <td class="r"><input class="inp-edit" type="number" value="${d.e}" onchange="S.months[${m}]['${u}'].e=+this.value;recalcRow(${m},'${u}')"></td>
+      <td class="r"><input class="inp-edit" type="number" value="${d.pw}" onchange="S.months[${m}]['${u}'].pw=+this.value;recalcRow(${m},'${u}')"></td>
+      <td class="r"><input class="inp-edit" type="number" value="${d.priv}" onchange="S.months[${m}]['${u}'].priv=+this.value;recalcRow(${m},'${u}')"></td>
+      <td class="r" id="fixed_${m}_${u}">${fmt(fixed)}</td>
+      <td class="r" id="tot_${m}_${u}"><strong>${fmt(d.total)}</strong></td>
+      <td class="r"><input class="inp-edit" type="number" value="${d.bill}" onchange="S.months[${m}]['${u}'].bill=+this.value"></td>
+      <td><input type="text" style="width:100px;padding:3px 6px;border:1px solid var(--border);border-radius:4px;font-size:12px" value="${d.note||''}" onchange="S.months[${m}]['${u}'].note=this.value"></td>
+    </tr>`;
+  });
+  document.getElementById('inputTbody').innerHTML=rows;
+  document.getElementById('inputTfoot').innerHTML=`<tr><td><strong>합계</strong></td><td class="r">${fmt(se)}</td><td class="r">${fmt(spw)}</td><td class="r">${fmt(spriv)}</td><td></td><td class="r"><strong>${fmt(st)}</strong></td><td colspan="2"></td></tr>`;
+}
+
+function recalcRow(m,u){
+  const d=S.months[m][u];
+  const fixedTotal=Object.values(S.fixed).reduce((a,b)=>a+b,0);
+  const prevFixed=d.total-d.e-d.pw-d.priv;
+  d.total=d.e+d.pw+d.priv+prevFixed;
+  const fEl=document.getElementById(`tot_${m}_${u}`);
+  if(fEl) fEl.innerHTML=`<strong>${fmt(d.total)}</strong>`;
+}
+
+// ============================================================
+// 수도계량기
+// ============================================================
+function renderWater(){
+  const m=curMonth;
+  const wi=S.water[m]||{total_fee:0,total_tons:1,pub_fee:0};
+  document.getElementById('w_totalFee').value=wi.total_fee;
+  document.getElementById('w_totalTons').value=wi.total_tons;
+  document.getElementById('w_pubWater').value=wi.pub_fee;
+  calcWater();
+  renderMeterHist();
+}
+
+function calcWater(){
+  const m=curMonth;
+  const totalFee=parseFloat(document.getElementById('w_totalFee').value)||0;
+  const totalTons=parseFloat(document.getElementById('w_totalTons').value)||1;
+  const pubWater=parseFloat(document.getElementById('w_pubWater').value)||0;
+  const rate=totalFee/totalTons;
+  document.getElementById('waterRateInfo').innerHTML=`<strong>단가: ${rate.toFixed(2)}원/톤</strong> | 총요금 ${fmt(totalFee)}원 / 총사용량 ${totalTons}톤`;
+  let rows='',privSum=0;
+  // hasMeter가 true인 활성 호실 동적 계산
+  const dynMeterUnits=activeUnits().filter(u=>{
+    const r=S.rooms&&S.rooms[u];
+    return r?r.hasMeter:METER_UNITS.includes(u);
+  });
+  dynMeterUnits.forEach(u=>{
+    if(!S.meter[u]) S.meter[u]=new Array(13).fill(0);
+    const hist=S.meter[u];
+    const prev=hist[m-1]||0;
+    const curr=hist[m]||0;
+    const usage=Math.max(0,curr-prev);
+    const rawFee=usage*rate;
+    const confirmed=r10(rawFee);
+    privSum+=confirmed;
+    rows+=`<tr>
+      <td>${pill(u)}</td>
+      <td class="r"><input class="inp-edit" type="number" value="${prev}" onchange="S.meter['${u}'][${m-1}]=+this.value;calcWater()"></td>
+      <td class="r"><input class="inp-edit" type="number" value="${curr}" onchange="S.meter['${u}'][${m}]=+this.value;calcWater()"></td>
+      <td class="r"><strong>${usage}</strong>톤</td>
+      <td class="r">${rawFee.toFixed(1)}원</td>
+      <td class="r"><strong style="color:${confirmed>0?'var(--navy)':'#aaa'}">${fmt(confirmed)}</strong>원</td>
+      <td><button class="btn btn-success btn-sm" onclick="applySingleWater(${m},'${u}',${confirmed})" ${confirmed===0?'disabled style="opacity:.4"':''}>적용</button></td>
+    </tr>`;
+  });
+  activeUnits().filter(u=>!dynMeterUnits.includes(u)).forEach(u=>{
+    rows+=`<tr style="color:#bbb"><td>${pill(u)}</td><td colspan="4" style="font-size:12px">전용수도 없음</td><td class="r">-</td></tr>`;
+  });
+  document.getElementById('waterTbody').innerHTML=rows;
+  document.getElementById('waterTfoot').innerHTML=`<tr><td colspan="5"><strong>전용수도 합계</strong></td><td class="r"><strong>${fmt(privSum)}</strong>원</td></tr>`;
+}
+
+function applySingleWater(m,u,confirmed){
+  if(confirmed===0){showToast('사용량이 0톤입니다');return;}
+  S.months[m][u].priv=confirmed;
+  // 총합 재계산
+  const fixedTotal=Object.values(S.fixed).reduce((a,b)=>a+b,0);
+  const wi=S.water[m]||{pub_fee:0};
+  const elec=S.elec[m]||0;
+  S.months[m][u].total=r10(elec*RATIOS[u]+wi.pub_fee*RATIOS[u]+confirmed+fixedTotal*RATIOS[u]);
+  if(S.months[m][u].bill<S.months[m][u].total) S.months[m][u].bill=S.months[m][u].total;
+  saveData();
+  showToast(`${u} ${m}월 전용수도 ${fmt(confirmed)}원 반영 완료`);
+}
+
+function applyWater(){
+  const m=curMonth;
+  const totalFee=parseFloat(document.getElementById('w_totalFee').value)||0;
+  const totalTons=parseFloat(document.getElementById('w_totalTons').value)||1;
+  const pubWater=parseFloat(document.getElementById('w_pubWater').value)||0;
+  const rate=totalFee/totalTons;
+  S.water[m]={total_fee:totalFee,total_tons:totalTons,pub_fee:pubWater};
+  const dynMeterUnits2=activeUnits().filter(u=>{const r=S.rooms&&S.rooms[u];return r?r.hasMeter:METER_UNITS.includes(u);});
+  dynMeterUnits2.forEach(u=>{
+    if(!S.meter[u]) S.meter[u]=new Array(13).fill(0);
+    const hist=S.meter[u];
+    const prev=hist[m-1]||0;const curr=hist[m]||0;
+    const usage=Math.max(0,curr-prev);
+    S.months[m][u].priv=r10(usage*rate);
+  });
+  // 총합 재계산
+  const fixedTotal=Object.values(S.fixed).reduce((a,b)=>a+b,0);
+  UNITS.forEach(u=>{
+    const d=S.months[m][u];
+    d.total=r10(S.elec[m]*RATIOS[u]+pubWater*RATIOS[u]+d.priv+fixedTotal*RATIOS[u]);
+    if(d.bill<d.total) d.bill=d.total;
+  });
+  showToast(`${m}월 전용수도 반영 완료`);
+  renderWater();
+}
+
+function renderMeterHist(){
+  let rows='';
+  METER_UNITS.forEach(u=>{
+    const hist=S.meter[u];
+    let cells=`<td>${pill(u)}</td>`;
+    for(let i=0;i<=12;i++){
+      const v=hist[i]||0;
+      const usage=i>0?Math.max(0,(hist[i]||0)-(hist[i-1]||0)):'';
+      cells+=`<td class="r" style="font-size:12px">${v>0?v:'-'}<br><span style="color:#aaa;font-size:10px">${usage!==''&&usage>0?`+${usage}t`:''}</span></td>`;
+    }
+    rows+=`<tr>${cells}</tr>`;
+  });
+  document.getElementById('meterHistTbl').innerHTML=rows;
+}
+
+// ============================================================
+// 전기요금
+// ============================================================
+function renderElec(){
+  const months=[1,2,3,4,5,6,7,8,9,10,11,12];
+  let rows='';
+  months.forEach(mn=>{
+    const hasVal=S.elec[mn]&&S.elec[mn]>0;
+    const note=hasVal?'<span style="color:#2e7d32;font-weight:600">✓ 2026년 실적</span>':'<span style="color:#bbb">미입력</span>';
+    rows+=`<tr>
+      <td>${mn}월</td>
+      <td class="r"><input class="inp-edit" style="width:120px" type="number" value="${S.elec[mn]||''}" onchange="S.elec[${mn}]=+this.value;renderElec()"></td>
+      <td style="font-size:12px">${note}</td>
+    </tr>`;
+  });
+  document.getElementById('elecTbody').innerHTML=rows;
+}
+function saveElec(){saveData();renderElec();showToast('전기요금 저장 완료');}
+
+// ============================================================
+// 미납현황
+// ============================================================
+function renderUnpaid(){
+  if(!S.payHist) S.payHist=[];
+  const m=curMonth;const mdata=S.months[m];
+  let totUnpaid=0,cnt=0;
+  activeUnits().forEach(u=>{const d=mdata[u];if(!d)return;if(d.bill>d.total){cnt++;totUnpaid+=d.bill-d.total;}});
+  const gasonBal=S.gason.reduce((s,g)=>s+g.amt,0);
+
+  document.getElementById('unpaidStats').innerHTML=`
+    <div class="stat red"><div class="stat-label">${m}월 미납 세대</div><div class="stat-val">${cnt}</div><div class="stat-sub">세대</div></div>
+    <div class="stat red"><div class="stat-label">${m}월 미납 합계</div><div class="stat-val">${fmt(totUnpaid)}</div><div class="stat-sub">원</div></div>
+    <div class="stat green"><div class="stat-label">가수금 잔액</div><div class="stat-val">${fmt(gasonBal)}</div><div class="stat-sub">원</div></div>
+  `;
+
+  let rows='';
+  activeUnits().forEach(u=>{
+    const d=mdata[u];if(!d)return;
+    const carryover=Math.max(0,d.bill-d.total);
+    const isPaid=carryover===0;
+    const penalty=!isPaid?Math.round(carryover*0.02):0;
+    const totalBill=d.total+carryover+penalty;
+
+    const payBtn=isPaid
+      ? `<button class="pay-action-btn to-unpaid" onclick="markUnpaid(${m},'${u}')">↩ 미납처리</button>`
+      : `<button class="pay-action-btn to-paid" onclick="markPaid(${m},'${u}')">완납처리</button>`;
+
+    rows+=`<tr class="${isPaid?'':'unpaid-row'}">
+      <td>${pill(u)}</td>
+      <td class="r">${fmt(d.total)}</td>
+      <td class="r" style="color:${carryover>0?'var(--red)':''};font-weight:${carryover>0?700:400}">${carryover>0?fmt(carryover):'-'}</td>
+      <td class="r" style="color:${penalty>0?'var(--red)':''}">${penalty>0?fmt(penalty):'-'}</td>
+      <td class="r"><strong style="font-size:14px;color:${isPaid?'inherit':'var(--red)'}">${fmt(isPaid?d.total:totalBill)}</strong></td>
+      <td><span class="badge ${isPaid?'ok':'ng'}">${isPaid?'완납':'미납'}</span></td>
+      <td>${payBtn}</td>
+      <td><input type="text" value="${d.note||''}" style="width:90px;padding:3px 6px;border:1px solid var(--border);border-radius:4px;font-size:11px" onchange="S.months[${m}]['${u}'].note=this.value"></td>
+    </tr>`;
+  });
+  document.getElementById('unpaidTbody').innerHTML=rows;
+
+  // 납부 히스토리 (최신순)
+  const phrows=(S.payHist||[]).slice().reverse().map(h=>{
+    const isPaidAct=h.action==='완납';
+    return `<tr class="${isPaidAct?'':'unpaid-row'}" style="font-size:12px">
+      <td>${h.dt}</td>
+      <td>${pill(h.unit)}</td>
+      <td>${h.month}월</td>
+      <td class="r">${fmt(h.total)}</td>
+      <td class="r" style="color:${h.carryover>0?'var(--red)':''}">${h.carryover>0?fmt(h.carryover):'-'}</td>
+      <td class="r"><strong>${fmt(h.paid)}</strong></td>
+      <td><span class="badge ${isPaidAct?'ok':'ng'}">${h.action}</span></td>
+      <td>${h.note||''}</td>
+    </tr>`;
+  }).join('');
+  document.getElementById('payHistTbody').innerHTML=phrows||'<tr><td colspan="8" style="text-align:center;color:#aaa;padding:16px">이력 없음</td></tr>';
+
+  // 월별 이력 테이블
+  const hrows=S.unpaidHist.map(h=>{
+    const cells=activeUnits().map(u=>{
+      const d=h.data&&h.data[u];
+      return d?`<td class="r" style="font-size:11px"><span style="color:var(--red)">${fmt(d.amt)}</span><br><span style="color:#aaa">(연체:${fmt(d.penalty)})</span></td>`:'<td class="r" style="color:#ddd">-</td>';
+    }).join('');
+    return `<tr><td>${h.period}</td><td>${h.counts&&Object.keys(h.counts).length?Object.entries(h.counts).map(([u,ct])=>`${u}:${ct}회`).join(' '):'-'}</td>${cells}</tr>`;
+  }).join('');
+  document.getElementById('unpaidHistTbody').innerHTML=hrows;
+}
+
+// 완납처리
+// 완납/미납 처리 - 모달 방식
+function markPaid(m,u){
+  if(!S.payHist) S.payHist=[];
+  const d=S.months[m][u];
+  const carryover=Math.max(0,d.bill-d.total);
+  const penalty=Math.round(carryover*0.02);
+  const totalPaid=d.total+carryover+penalty;
+  // 납부 이력 가져오기
+  const hist=(S.payHist||[]).filter(h=>h.unit===u&&h.month===m);
+  const histHtml=hist.length?hist.slice(-3).reverse().map(h=>
+    `<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #f0f0f0;font-size:12px">
+      <span>${h.dt} <span style="background:${h.action==='완납'?'#e8f5e9':'#ffebee'};color:${h.action==='완납'?'#1b5e20':'#c62828'};padding:1px 6px;border-radius:8px;font-size:11px">${h.action}</span></span>
+      <span>${fmt(h.paid)}원 ${h.note?'· '+h.note:''}</span>
+    </div>`).join(''):'<div style="color:#aaa;font-size:12px;padding:4px 0">이력 없음</div>';
+
+  showModal(
+    `✅ ${u} ${m}월 완납처리`,
+    `<div style="margin-bottom:14px">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
+        <div style="background:#f5f5f5;border-radius:8px;padding:10px;text-align:center">
+          <div style="font-size:11px;color:#888">당월관리비</div>
+          <div style="font-size:16px;font-weight:700">${fmt(d.total)}원</div>
+        </div>
+        <div style="background:${carryover>0?'#ffebee':'#e8f5e9'};border-radius:8px;padding:10px;text-align:center">
+          <div style="font-size:11px;color:#888">이월미납+연체</div>
+          <div style="font-size:16px;font-weight:700;color:${carryover>0?'#c62828':'#2e7d32'}">${carryover>0?fmt(carryover+penalty):'없음'}</div>
+        </div>
+      </div>
+      <div style="background:#1a237e;color:#fff;border-radius:8px;padding:12px;text-align:center;margin-bottom:14px">
+        <div style="font-size:11px;opacity:.8">납부 금액</div>
+        <div style="font-size:22px;font-weight:700">${fmt(totalPaid)}원</div>
+      </div>
+      <div class="fg" style="margin-bottom:12px">
+        <label>납부 메모 (선택)</label>
+        <input type="text" id="payNoteInput" placeholder="예: 현금납부, 계좌이체 등">
+      </div>
+      <div style="border:1px solid #f0f0f0;border-radius:8px;padding:10px">
+        <div style="font-size:11px;font-weight:700;color:#888;margin-bottom:6px">최근 납부 이력</div>
+        ${histHtml}
+      </div>
+    </div>`,
+    `<button class="btn btn-outline" onclick="closeModal()">취소</button>
+     <button class="btn btn-success" onclick="confirmMarkPaid(${m},'${u}',${totalPaid})">✅ 완납 확정</button>`
+  );
+}
+
+function confirmMarkPaid(m,u,totalPaid){
+  const note=document.getElementById('payNoteInput')?.value||'';
+  const d=S.months[m][u];
+  const carryover=Math.max(0,d.bill-d.total);
+  S.payHist.push({dt:today(),unit:u,month:m,total:d.total,carryover,paid:totalPaid,action:'완납',note});
+  S.months[m][u].bill=d.total;
+  saveData();
+  closeModal();
+  // 현재 활성 섹션 갱신
+  renderUnits();
+  if(document.getElementById('sec-unpaid').classList.contains('active')) renderUnpaid();
+  showToast(`${u} ${m}월 완납처리 완료`);
+}
+
+// 미납처리 (완납 취소)
+function markUnpaid(m,u){
+  if(!S.payHist) S.payHist=[];
+  const d=S.months[m][u];
+  // 이전 완납 이력에서 원래 미납 포함 청구액 복원
+  const prevPaid=[...S.payHist].reverse().find(h=>h.unit===u&&h.month===m&&h.action==='완납');
+  // origBill: 완납 전 실제 청구액 (이월미납 포함)
+  const origBill=prevPaid?(prevPaid.total+prevPaid.carryover):null;
+  const hist=(S.payHist||[]).filter(h=>h.unit===u&&h.month===m);
+  const histHtml=hist.length?hist.slice(-3).reverse().map(h=>
+    `<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #f0f0f0;font-size:12px">
+      <span>${h.dt} <span style="background:${h.action==='완납'?'#e8f5e9':'#ffebee'};color:${h.action==='완납'?'#1b5e20':'#c62828'};padding:1px 6px;border-radius:8px;font-size:11px">${h.action}</span></span>
+      <span>${h.paid>0?fmt(h.paid)+'원':'-'} ${h.note?'· '+h.note:''}</span>
+    </div>`).join(''):'<div style="color:#aaa;font-size:12px;padding:4px 0">이력 없음</div>';
+
+  // 복원 불가(직접 이월 없이 완납 이력도 없음)시 직접 입력
+  const restoreMsg=origBill
+    ? `이전 완납을 취소합니다. 청구액이 <strong>${fmt(origBill)}원</strong>으로 복원됩니다.`
+    : `직접 미납 청구액을 입력해주세요.`;
+
+  showModal(
+    `↩ ${u} ${m}월 미납처리`,
+    `<div>
+      <div class="alert red" style="margin-bottom:12px">
+        <span>⚠️</span><div>${restoreMsg}</div>
+      </div>
+      ${!origBill?`<div class="fg" style="margin-bottom:12px">
+        <label>미납 청구액 직접 입력 (원)</label>
+        <input type="number" id="unpayBillInput" value="${d.total}" placeholder="${d.total}">
+      </div>`:`<input type="hidden" id="unpayBillInput" value="${origBill}">`}
+      <div class="fg" style="margin-bottom:12px">
+        <label>미납 사유 메모 (선택)</label>
+        <input type="text" id="unpayNoteInput" placeholder="예: 부재중, 이의신청, 이월 등">
+      </div>
+      <div style="border:1px solid #f0f0f0;border-radius:8px;padding:10px">
+        <div style="font-size:11px;font-weight:700;color:#888;margin-bottom:6px">납부 이력</div>
+        ${histHtml}
+      </div>
+    </div>`,
+    `<button class="btn btn-outline" onclick="closeModal()">취소</button>
+     <button class="btn btn-danger" onclick="confirmMarkUnpaid(${m},'${u}')">↩ 미납 확정</button>`
+  );
+}
+
+function confirmMarkUnpaid(m,u){
+  // 모달 닫기 전에 값 먼저 읽기 (closeModal 후에는 DOM 사라짐)
+  const note=document.getElementById('unpayNoteInput')?.value||'';
+  const billInput=document.getElementById('unpayBillInput');
+  const newBill=parseInt(billInput?.value)||0;
+  const d=S.months[m][u];
+  // 입력값 검증
+  if(!newBill||newBill<0){showToast('올바른 청구액을 입력하세요');return;}
+  if(newBill<=d.total){
+    if(!confirm(`청구액(${fmt(newBill)})이 당월관리비(${fmt(d.total)})와 같습니다.\n미납(이월없음)으로 표시하시겠습니까?`)) return;
+  }
+  const carryover=Math.max(0,newBill-d.total);
+  if(!S.payHist) S.payHist=[];
+  S.payHist.push({dt:today(),unit:u,month:m,total:d.total,carryover,paid:0,action:'미납',note});
+  S.months[m][u].bill=newBill;
+  saveData();
+  closeModal();  // 값 읽은 후 닫기
+  renderUnits(); // 화면 즉시 갱신
+  if(document.getElementById('sec-unpaid').classList.contains('active')) renderUnpaid();
+  showToast(`${u} ${m}월 미납처리 완료 (청구액: ${fmt(newBill)}원)`);
+}
+
+// 현재 미납 스냅샷 저장
+function addUnpaidSnapshot(){
+  const m=curMonth;const mdata=S.months[m];
+  const data={};let hasUnpaid=false;
+  activeUnits().forEach(u=>{
+    const d=mdata[u];if(!d)return;
+    if(d.bill>d.total){
+      hasUnpaid=true;
+      data[u]={amt:d.total,penalty:Math.round((d.bill-d.total)*0.02)};
+    }
+  });
+  if(!hasUnpaid){showToast('미납 세대가 없습니다');return;}
+  const period=`2026.${String(m).padStart(2,'0')}`;
+  const already=S.unpaidHist.find(h=>h.period===period);
+  if(already){if(!confirm(`${period} 스냅샷이 이미 있습니다. 덮어쓰시겠습니까?`))return;S.unpaidHist=S.unpaidHist.filter(h=>h.period!==period);}
+  S.unpaidHist.push({period,counts:{},data});
+  saveData();renderUnpaid();
+  showToast(`${m}월 미납 스냅샷 저장`);
+}
+
+
+// ============================================================
+// 중간정산
+// ============================================================
+function renderInterim(){
+  // 이력
+  let rows=S.interimHist.map(h=>{
+    const avg=(h.m1+h.m2+h.m3)/3;
+    const daily=avg/30;
+    return `<tr>
+      <td>${pill(h.unit+'호')}</td><td>${h.date}</td>
+      <td class="r">${fmt(h.m1)}</td><td class="r">${fmt(h.m2)}</td><td class="r">${fmt(h.m3)}</td>
+      <td class="r">${fmt(Math.round(avg))}</td>
+      <td class="r">${daily.toFixed(1)}</td>
+      <td class="r">${h.days}</td>
+      <td class="r">${fmt(h.total)}</td>
+      <td class="r">${fmt(h.withPct)}</td>
+      <td class="r"><strong>${fmt(h.withPct)}</strong></td>
+      <td>${h.note||''}</td>
+    </tr>`;
+  }).join('');
+  document.getElementById('interimHistTbl').innerHTML=rows||'<tr><td colspan="12" style="text-align:center;color:#aaa">이력 없음</td></tr>';
+}
+
+function calcInterim(){
+  const m1=parseFloat(document.getElementById('int_m1').value)||0;
+  const m2=parseFloat(document.getElementById('int_m2').value)||0;
+  const m3=parseFloat(document.getElementById('int_m3').value)||0;
+  const days=parseFloat(document.getElementById('int_days').value)||0;
+  if(!m1&&!m2&&!m3){document.getElementById('interimResult').innerHTML='';return;}
+  const avg=(m1+m2+m3)/3;
+  const daily=avg/30;
+  const base=daily*days;
+  const withPct=Math.round(base*1.05/10)*10;
+  document.getElementById('interimResult').innerHTML=`
+    <div style="background:var(--gray2);border-radius:8px;padding:14px;margin-top:8px">
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;font-size:12px">
+        <div><div style="color:#666">3개월 평균</div><div style="font-weight:700;font-size:14px">${fmt(Math.round(avg))}원</div></div>
+        <div><div style="color:#666">일할 단가</div><div style="font-weight:700;font-size:14px">${daily.toFixed(1)}원/일</div></div>
+        <div><div style="color:#666">정산 기본액</div><div style="font-weight:700;font-size:14px">${fmt(Math.round(base))}원</div></div>
+        <div><div style="color:#666">5% 가산 청구액</div><div style="font-weight:700;font-size:16px;color:var(--navy)">${fmt(withPct)}원</div></div>
+      </div>
+    </div>`;
+}
+
+function saveInterim(){
+  const u=document.getElementById('int_unit').value.replace('호','');
+  const date=document.getElementById('int_date').value;
+  const m1=parseFloat(document.getElementById('int_m1').value)||0;
+  const m2=parseFloat(document.getElementById('int_m2').value)||0;
+  const m3=parseFloat(document.getElementById('int_m3').value)||0;
+  const days=parseFloat(document.getElementById('int_days').value)||0;
+  const avg=(m1+m2+m3)/3;const base=avg/30*days;const withPct=Math.round(base*1.05/10)*10;
+  S.interimHist.push({unit:u,date,m1,m2,m3,days,total:Math.round(base),withPct,note:''});
+  saveData();renderInterim();showToast('저장 완료');
+}
+
+// ============================================================
+// 고지서
+// ============================================================
+function buildReceiptHTML(m,u){
+  const d=S.months[m][u];
+  const fixed=S.fixed;
+  const meter=S.meter[u];
+  const wi=S.water[m]||{};
+  const fixedTotal=Object.values(fixed).reduce((a,b)=>a+b,0);
+  const fixedShare=Math.round(fixedTotal*getRatio(u));
+  const dueDate=document.getElementById('rcpt_duedate')?.value||`2026-${String(m).padStart(2,'0')}-25`;
+  const dueFmt=dueDate.replace(/-/g,'.');
+  const afterDue=d.bill+Math.round(d.total*0.023);
+  const unpaid=Math.max(0,d.bill-d.total);
+  const penalty=unpaid>0?Math.round(unpaid*0.02):0;
+
+  // 계량기 정보
+  let meterSection='';
+  if(meter){
+    const prev=meter[m-1]||0;const curr=meter[m]||0;const usage=Math.max(0,curr-prev);
+    if(usage>0||d.priv>0){
+      meterSection=`<div class="receipt-meter" style="margin-bottom:8px">
+        <div class="receipt-meter-title">수도계량기 지침</div>
+        <div class="receipt-meter-row">
+          <div class="receipt-meter-cell hd">구분</div><div class="receipt-meter-cell hd">전월</div><div class="receipt-meter-cell hd">당월</div><div class="receipt-meter-cell hd">사용량</div><div class="receipt-meter-cell hd">요금</div>
+        </div>
+        <div class="receipt-meter-row">
+          <div class="receipt-meter-cell">전용수도</div><div class="receipt-meter-cell">${fmt(prev)}</div><div class="receipt-meter-cell">${fmt(curr)}</div><div class="receipt-meter-cell">${usage}톤</div><div class="receipt-meter-cell">${fmt(d.priv)}원</div>
+        </div>
+      </div>`;
+    }
+  }
+
+  const fixedRows=Object.entries(fixed).map(([k,v])=>`<div class="rs-row"><span>${k}</span><span>${fmt(Math.round(v*getRatio(u)))}원</span></div>`).join('');
+
+  return `<div class="receipt-page">
+    <div class="receipt-title">
+      <h2>관리비 고지서</h2>
+      <p>2026년 ${m}월 사용분 명세서</p>
+    </div>
+    <div class="receipt-unit-hdr">
+      <div>
+        <div style="font-size:9pt;color:#555">경남프라자</div>
+        <div class="unit-name">${u}</div>
+        <div style="font-size:8.5pt">지분율: ${(RATIOS[u]*100).toFixed(4)}%</div>
+      </div>
+      <div class="unit-meta">
+        납기일: <strong>${dueFmt}</strong><br>
+        납기내: <strong>${fmt(d.bill)}원</strong><br>
+        납기후: ${fmt(afterDue)}원
+      </div>
+      <div class="receipt-stamp">인</div>
+    </div>
+    ${meterSection}
+    <div class="receipt-sections">
+      <div class="rs-box">
+        <div class="rs-box-title">■ 공용부과</div>
+        <div class="rs-row"><span>공용 전기요금</span><span>${fmt(d.e)}원</span></div>
+        <div class="rs-row"><span>공용 수도요금</span><span>${fmt(d.pw)}원</span></div>
+        ${d.priv?`<div class="rs-row"><span>전용 수도요금</span><span>${fmt(d.priv)}원</span></div>`:''}
+        <div class="rs-row bold"><span>공용합계</span><span>${fmt(d.common||d.e+d.pw+fixedShare)}원</span></div>
+      </div>
+      <div class="rs-box">
+        <div class="rs-box-title">■ 고정부과</div>
+        ${fixedRows}
+        <div class="rs-row bold"><span>고정합계</span><span>${fmt(fixedShare)}원</span></div>
+      </div>
+    </div>
+    <div class="receipt-total">
+      <div>
+        <div class="t-label">당월 관리비</div>
+        ${unpaid>0?`
+          <div style="font-size:9pt;margin-top:5px;line-height:1.8">
+            <div>당월: ${fmt(d.total)}원</div>
+            <div style="color:#c00">이월미납: ${fmt(unpaid-penalty)}원</div>
+            <div style="color:#c00">연체료(2%): ${fmt(penalty)}원</div>
+          </div>`:''}
+        <div class="t-after">납기후: ${fmt(afterDue)}원</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:9pt;color:#555;margin-bottom:4px">${unpaid>0?'당월+미납 합계':'당월 합계'}</div>
+        <div class="t-val">${fmt(d.bill)}<span style="font-size:10pt">원</span></div>
+      </div>
+    </div>
+    <div class="receipt-bank">
+      <div>
+        <strong>수납은행:</strong> 우리은행 1005-902-946812<br>
+        <strong>예금주:</strong> 경남프라자 관리단
+      </div>
+      <div style="text-align:right">
+        <strong>문의:</strong> T. 031-422-7474<br>
+        경남프라자 관리단
+      </div>
+    </div>
+  </div>`;
+}
+
+function buildInterimReceiptHTML(){
+  const u=document.getElementById('int_unit').value;
+  const date=document.getElementById('int_date').value;
+  const m1=parseFloat(document.getElementById('int_m1').value)||0;
+  const m2=parseFloat(document.getElementById('int_m2').value)||0;
+  const m3=parseFloat(document.getElementById('int_m3').value)||0;
+  const days=parseFloat(document.getElementById('int_days').value)||0;
+  const avg=(m1+m2+m3)/3;const base=avg/30*days;const withPct=Math.round(base*1.05/10)*10;
+  const dateFmt=date?date.replace(/-/g,'.'):'';
+  return `<div class="receipt-page">
+    <div class="receipt-title"><h2>중간정산 고지서</h2><p>경남프라자 ${u}</p></div>
+    <div class="receipt-unit-hdr">
+      <div class="unit-name">${u}</div>
+      <div class="unit-meta">정산일: ${dateFmt}<br>정산일수: ${days}일</div>
+    </div>
+    <div class="interim-box">
+      <div class="interim-title">■ 중간정산 계산내역</div>
+      <div class="interim-row"><span>최근 3개월 관리비①</span><span>${fmt(m1)}원</span></div>
+      <div class="interim-row"><span>최근 3개월 관리비②</span><span>${fmt(m2)}원</span></div>
+      <div class="interim-row"><span>최근 3개월 관리비③</span><span>${fmt(m3)}원</span></div>
+      <div class="interim-row"><span>3개월 평균</span><span>${fmt(Math.round(avg))}원</span></div>
+      <div class="interim-row"><span>일할 단가 (÷30일)</span><span>${(avg/30).toFixed(2)}원/일</span></div>
+      <div class="interim-row"><span>정산일수</span><span>${days}일</span></div>
+      <div class="interim-row"><span>기본 정산액</span><span>${fmt(Math.round(base))}원</span></div>
+      <div class="interim-row"><span>5% 가산</span><span>${fmt(Math.round(base*0.05))}원</span></div>
+      <div class="interim-total"><span>청구금액</span><span>${fmt(withPct)}원</span></div>
+    </div>
+    <div class="receipt-bank">
+      <div><strong>수납:</strong> 우리은행 1005-902-946812 (예금주: 경남프라자 관리단)</div>
+      <div><strong>T.</strong> 031-422-7474</div>
+    </div>
+  </div>`;
+}
+
+function renderReceiptPreview(){
+  const m=curMonth;
+  const u=document.getElementById('rcpt_unit')?.value||'ALL';
+  if(!u||u==='ALL'){
+    document.getElementById('receiptPreview').innerHTML='<div class="alert blue" style="margin-top:12px"><span class="alert-ico">ℹ️</span><div>호실을 선택하거나 [미리보기]를 눌러 고지서를 확인하세요.</div></div>';
+    return;
+  }
+  document.getElementById('receiptPreview').innerHTML=`<div style="border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-top:12px">${buildReceiptHTML(m,u)}</div>`;
+}
+
+function previewReceipt(){
+  const m=curMonth;
+  const u=document.getElementById('rcpt_unit').value;
+  let html='';
+  if(u==='ALL'){UNITS.forEach(u2=>{html+=buildReceiptHTML(m,u2)+'<hr class="receipt-divider">';});}
+  else{html=buildReceiptHTML(m,u);}
+  document.getElementById('receiptPreview').innerHTML=`<div style="border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-top:12px">${html}</div>`;
+}
+
+function printInterimReceipt(){
+  const html=buildInterimReceiptHTML();
+  document.getElementById('printArea').innerHTML=html;
+  window.print();
+}
+
+function printAllReceipts(){
+  const m=curMonth;
+  let html='';
+  activeUnits().forEach(u2=>{
+    html+=`<div class="receipt-page">${buildReceiptHTML(m,u2)}</div>`;
+  });
+  document.getElementById('printArea').innerHTML=html;
+  window.print();
+}
+
+function printReceipt(){
+  const m=curMonth;
+  const u=document.getElementById('rcpt_unit').value;
+  let html='';
+  if(u==='ALL'){
+    UNITS.forEach(u2=>{html+=`<div class="receipt-page">${buildReceiptHTML(m,u2)}</div>`;});
+  } else {
+    html=`<div class="receipt-page">${buildReceiptHTML(m,u)}</div>`;
+  }
+  document.getElementById('printArea').innerHTML=html;
+  window.print();
+}
+
+function downloadPDF(){
+  // jsPDF는 한글 폰트 미지원 → 브라우저 인쇄 → PDF 저장 방식 사용
+  const m=curMonth;
+  const u=document.getElementById('rcpt_unit').value;
+  let html='';
+  if(u==='ALL'){
+    UNITS.forEach(u2=>{html+=`<div class="receipt-page">${buildReceiptHTML(m,u2)}</div>`;});
+  } else {
+    html=`<div class="receipt-page">${buildReceiptHTML(m,u)}</div>`;
+  }
+  document.getElementById('printArea').innerHTML=html;
+  // 인쇄 대화상자에서 "PDF로 저장" 선택 안내
+  showToast('인쇄 창에서 "PDF로 저장"을 선택하세요');
+  setTimeout(()=>window.print(), 400);
+}
+
+function refreshRcptUnits(){
+  const sel=document.getElementById('rcpt_unit');
+  const cur=sel.value;
+  sel.innerHTML='<option value="ALL">전체 활성 호실</option>'+
+    activeUnits().map(u=>`<option value="${u}" ${u===cur?'selected':''}>${u}</option>`).join('');
+}
+
+function sendEmail(){
+  const email=document.getElementById('rcpt_email').value;
+  const m=curMonth;
+  const u=document.getElementById('rcpt_unit').value;
+  if(!email){showToast('메일 주소를 입력해주세요');return;}
+  const subject=encodeURIComponent(`경남프라자 2026년 ${m}월 관리비 고지서 - ${u==='ALL'?'전체':u}`);
+  const body=encodeURIComponent(`안녕하세요,\n\n경남프라자 2026년 ${m}월 관리비 고지서를 전송합니다.\n\n고지서는 첨부 파일 또는 별도 시스템에서 확인해 주세요.\n\n문의: 031-422-7474\n경남프라자 관리단`);
+  window.location.href=`mailto:${email}?subject=${subject}&body=${body}`;
+}
+
+// ============================================================
+// 연간 히스토리
+// ============================================================
+function renderAnnual(){
+  const months=[1,2,3,4,5,6,7,8,9,10,11,12];
+  const units=activeUnits();
+
+  // 헤더
+  const thCells=months.map(m=>`<th class="r" style="min-width:90px">${m}월</th>`).join('');
+  document.getElementById('annualThead').innerHTML=
+    `<tr style="position:sticky;top:0">
+      <th style="min-width:70px">호실</th>
+      ${thCells}
+      <th class="r">연납부합계</th>
+    </tr>`;
+
+  // 바디
+  let bodyRows='';
+  let monthTotals=months.map(()=>({total:0,paid:0}));
+  let grandTotal=0,grandPaid=0;
+
+  units.forEach(u=>{
+    let rowTotal=0,rowPaid=0;
+    const cells=months.map((m,mi)=>{
+      const md=S.months[m]&&S.months[m][u];
+      if(!md) return '<td class="r" style="color:#ddd">-</td>';
+      const isPaid=md.bill<=md.total;
+      const lastPay=(S.payHist||[]).slice().reverse().find(h=>h.unit===u&&h.month===m);
+      const amt=md.bill;
+      rowTotal+=md.total;
+      monthTotals[mi].total+=md.total;
+      if(isPaid){
+        rowPaid+=md.total;
+        monthTotals[mi].paid+=md.total;
+      }
+      // 엑셀처럼: 납부=노란배경, 미납=빨간
+      const style=isPaid
+        ?'background:#fff9c4;font-weight:600'
+        :'color:#c62828;font-weight:700;background:#fff5f5';
+      const dateStr=lastPay&&isPaid?`<br><span style="font-size:9px;color:#888">${lastPay.dt}</span>`:'';
+      return `<td class="r" style="${style};padding:6px 8px">${fmt(amt)}${dateStr}</td>`;
+    }).join('');
+    grandTotal+=rowTotal;grandPaid+=rowPaid;
+    bodyRows+=`<tr>
+      <td style="font-weight:600">${pill(u)}</td>
+      ${cells}
+      <td class="r" style="font-weight:700;background:#e8eaf6">${fmt(rowPaid)}<br><span style="font-size:10px;color:#888">/${fmt(rowTotal)}</span></td>
+    </tr>`;
+  });
+  document.getElementById('annualTbody').innerHTML=bodyRows;
+
+  // 푸터 (월별 합계)
+  const footCells=months.map((m,mi)=>{
+    const t=monthTotals[mi];
+    const allPaid=t.total>0&&t.paid===t.total;
+    return `<td class="r" style="font-weight:700;${allPaid?'background:#c8e6c9':''}">
+      ${fmt(t.paid)}<br><span style="font-size:10px;color:#aaa">/${fmt(t.total)}</span>
+    </td>`;
+  }).join('');
+  document.getElementById('annualTfoot').innerHTML=
+    `<tr style="background:#1a237e;color:#fff">
+      <td style="font-weight:700">합계</td>${footCells}
+      <td class="r" style="font-weight:700">${fmt(grandPaid)}<br><span style="font-size:10px;opacity:.7">/${fmt(grandTotal)}</span></td>
+    </tr>`;
+
+  // 연체료 계산 테이블 - 엑셀 공식: ROUND(금액×0.02325×미납개월수, -1)
+  let penRows='';
+  units.forEach(u=>{
+    let unpaidMonths=0,unpaidAmt=0;
+    months.forEach(m=>{
+      const md=S.months[m]&&S.months[m][u];
+      if(md&&md.bill>md.total){
+        unpaidMonths++;
+        unpaidAmt+=md.bill-md.total;
+      }
+    });
+    if(unpaidAmt===0) return;
+    const penalty=Math.round(unpaidAmt*0.02325*unpaidMonths/10)*10;
+    const lastHist=(S.payHist||[]).slice().reverse().find(h=>h.unit===u);
+    penRows+=`<tr class="unpaid-row">
+      <td>${pill(u)}</td>
+      <td class="r"><strong>${fmt(unpaidAmt)}</strong>원</td>
+      <td class="r">${unpaidMonths}개월</td>
+      <td class="r" style="color:var(--red);font-weight:700">${fmt(penalty)}원</td>
+      <td class="r" style="font-weight:700">${fmt(unpaidAmt+penalty)}원</td>
+      <td style="font-size:11px;color:#888">${lastHist?lastHist.dt+' '+lastHist.action:'-'}</td>
+    </tr>`;
+  });
+  document.getElementById('penaltyTbody').innerHTML=penRows||
+    '<tr><td colspan="6" style="text-align:center;color:#aaa;padding:16px">✓ 미납 세대 없음</td></tr>';
+}
+
+// ============================================================
+// 호실 관리
+// ============================================================
+function renderRoomMgr(){
+  if(!S.rooms) S.rooms={};
+  let rows='';
+  UNITS.forEach(u=>{
+    const r=S.rooms[u]||{ratio:RATIOS[u],hasMeter:false,active:true,tenant:'',tel:'',moveIn:''};
+    rows+=`<tr class="${r.active?'':'unpaid-row'}">
+      <td>${pill(u)}</td>
+      <td><input class="inp-edit" style="width:80px" type="number" value="${(r.ratio*100).toFixed(4)}" step="0.0001"
+        onchange="updateRoom('${u}','ratio',+this.value/100)"> %</td>
+      <td style="text-align:center">
+        <input type="checkbox" ${r.hasMeter?'checked':''} onchange="updateRoom('${u}','hasMeter',this.checked)">
+      </td>
+      <td><input class="inp-edit" style="width:90px" type="text" value="${r.tenant||''}" placeholder="임차인명"
+        onchange="updateRoom('${u}','tenant',this.value)"></td>
+      <td><input class="inp-edit" style="width:110px" type="text" value="${r.tel||''}" placeholder="010-0000-0000"
+        onchange="updateRoom('${u}','tel',this.value)"></td>
+      <td><input class="inp-edit" style="width:100px" type="text" value="${r.moveIn||''}" placeholder="2026.01.01"
+        onchange="updateRoom('${u}','moveIn',this.value)"></td>
+      <td><span class="badge ${r.active?'ok':'ng'}">${r.active?'활성':'비활성'}</span></td>
+      <td style="display:flex;gap:4px;flex-wrap:wrap">
+        <button class="btn btn-outline btn-sm" onclick="toggleRoom('${u}')">${r.active?'비활성화':'활성화'}</button>
+        <button class="btn btn-outline btn-sm" onclick="changeTenant('${u}')">임차인변경</button>
+        <button class="btn btn-primary btn-sm" onclick="quickInterim('${u}')">중간정산</button>
+      </td>
+    </tr>`;
+  });
+  // 추가된 custom 호실
+  Object.keys(S.rooms).filter(u=>!UNITS.includes(u)).forEach(u=>{
+    const r=S.rooms[u];
+    rows+=`<tr>
+      <td>${pill(u)}</td>
+      <td><input class="inp-edit" style="width:80px" type="number" value="${(r.ratio*100).toFixed(4)}" step="0.0001"
+        onchange="updateRoom('${u}','ratio',+this.value/100)"> %</td>
+      <td style="text-align:center"><input type="checkbox" ${r.hasMeter?'checked':''} onchange="updateRoom('${u}','hasMeter',this.checked)"></td>
+      <td><input class="inp-edit" style="width:90px" type="text" value="${r.tenant||''}" onchange="updateRoom('${u}','tenant',this.value)"></td>
+      <td><input class="inp-edit" style="width:110px" type="text" value="${r.tel||''}" onchange="updateRoom('${u}','tel',this.value)"></td>
+      <td><input class="inp-edit" style="width:100px" type="text" value="${r.moveIn||''}" onchange="updateRoom('${u}','moveIn',this.value)"></td>
+      <td><span class="badge ${r.active?'ok':'ng'}">${r.active?'활성':'비활성'}</span></td>
+      <td style="display:flex;gap:4px">
+        <button class="btn btn-outline btn-sm" onclick="toggleRoom('${u}')">${r.active?'비활성화':'활성화'}</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteRoom('${u}')">삭제</button>
+      </td>
+    </tr>`;
+  });
+  document.getElementById('roomTbody').innerHTML=rows;
+
+  // 임차인 이력
+  const hist=S.tenantHist||[];
+  document.getElementById('tenantHistTbody').innerHTML=hist.length?
+    hist.slice().reverse().map(h=>`<tr>
+      <td>${pill(h.unit)}</td><td>${h.date}</td>
+      <td>${h.prev||'-'}</td><td><strong>${h.next||'-'}</strong></td><td>${h.reason||''}</td>
+    </tr>`).join(''):
+    '<tr><td colspan="5" style="text-align:center;color:#aaa;padding:16px">이력 없음</td></tr>';
+}
+
+function updateRoom(u,key,val){
+  if(!S.rooms[u]) S.rooms[u]={ratio:RATIOS[u]||0,hasMeter:false,active:true,tenant:'',tel:'',moveIn:''};
+  S.rooms[u][key]=val;
+  saveData();
+}
+
+function toggleRoom(u){
+  if(!S.rooms[u]) S.rooms[u]={ratio:RATIOS[u]||0,hasMeter:false,active:true,tenant:'',tel:'',moveIn:''};
+  const cur=S.rooms[u].active!==false;
+  if(cur&&!confirm(`${u}을 비활성화하면 해당 호실이 관리비 계산에서 제외됩니다. 계속하시겠습니까?`)) return;
+  S.rooms[u].active=!cur;
+  saveData();renderRoomMgr();
+  showToast(`${u} ${S.rooms[u].active?'활성화':'비활성화'} 완료`);
+}
+
+function deleteRoom(u){
+  if(!confirm(`${u} 호실을 완전히 삭제하시겠습니까?`)) return;
+  delete S.rooms[u];
+  saveData();renderRoomMgr();
+  showToast(`${u} 삭제 완료`);
+}
+
+function addRoom(){
+  const name=document.getElementById('rm_name').value.trim();
+  const ratio=parseFloat(document.getElementById('rm_ratio').value)||0;
+  const hasMeter=document.getElementById('rm_meter').value==='1';
+  const tenant=document.getElementById('rm_tenant').value.trim();
+  const tel=document.getElementById('rm_tel').value.trim();
+  if(!name){showToast('호실명을 입력하세요');return;}
+  if(!S.rooms) S.rooms={};
+  S.rooms[name]={ratio:ratio/100,hasMeter,active:true,tenant,tel,moveIn:today()};
+  // 이번달 관리비 데이터 초기화
+  if(S.months[curMonth]&&!S.months[curMonth][name]){
+    S.months[curMonth][name]={e:0,pw:0,priv:0,common:0,total:0,bill:0,note:''};
+  }
+  ['rm_name','rm_ratio','rm_tenant','rm_tel'].forEach(id=>document.getElementById(id).value='');
+  saveData();renderRoomMgr();
+  showToast(`${name} 추가 완료`);
+}
+
+function changeTenant(u){
+  const r=S.rooms[u]||{};
+  showModal(`👤 ${u} 임차인 변경`,
+    `<div class="form-row">
+      <div class="fg"><label>기존 임차인</label><input type="text" id="ct_prev" value="${r.tenant||''}" readonly style="background:#f5f5f5"></div>
+      <div class="fg"><label>신규 임차인</label><input type="text" id="ct_next" placeholder="신규 임차인명"></div>
+    </div>
+    <div class="form-row">
+      <div class="fg"><label>변경일</label><input type="text" id="ct_date" value="${today()}"></div>
+      <div class="fg"><label>사유</label><input type="text" id="ct_reason" placeholder="예: 퇴실, 양도 등"></div>
+    </div>
+    <div class="alert amber" style="margin-top:8px"><span>⚠️</span><div>퇴실 임차인의 중간정산이 필요한 경우 <strong>수동 고지서</strong>에서 출력하세요.</div></div>`,
+    `<button class="btn btn-outline" onclick="closeModal()">취소</button>
+     <button class="btn btn-primary" onclick="confirmChangeTenant('${u}')">변경 저장</button>`
+  );
+}
+
+function confirmChangeTenant(u){
+  const prev=document.getElementById('ct_prev').value;
+  const next=document.getElementById('ct_next').value.trim();
+  const date=document.getElementById('ct_date').value;
+  const reason=document.getElementById('ct_reason').value.trim();
+  if(!next){showToast('신규 임차인명을 입력하세요');return;}
+  if(!S.tenantHist) S.tenantHist=[];
+  S.tenantHist.push({unit:u,date,prev,next,reason});
+  if(!S.rooms[u]) S.rooms[u]={};
+  S.rooms[u].tenant=next;
+  S.rooms[u].moveIn=date;
+  saveData();closeModal();renderRoomMgr();
+  showToast(`${u} 임차인 변경 완료 → ${next}`);
+}
+
+function quickInterim(u){
+  // 중간정산 탭으로 이동하고 해당 호실 선택
+  nav('interim');
+  const sel=document.getElementById('int_unit');
+  if(sel){
+    const opts=[...sel.options];
+    const match=opts.find(o=>o.value===u||o.text===u);
+    if(match) sel.value=match.value;
+  }
+  // 최근 3개월 자동 입력
+  const months=[curMonth,curMonth-1>0?curMonth-1:1,curMonth-2>0?curMonth-2:1];
+  months.forEach((mn,i)=>{
+    const d=S.months[mn]&&S.months[mn][u];
+    if(d) document.getElementById(`int_m${i+1}`).value=d.total;
+  });
+  showToast(`${u} 중간정산 탭으로 이동했습니다`);
+}
+
+// ============================================================
+// 수동 고지서
+// ============================================================
+function renderManualReceipt(){
+  const drafts=S.manualDrafts||[];
+  const rows=drafts.length?drafts.slice().reverse().map((d,i)=>
+    `<tr>
+      <td>${d.unit}</td><td>${d.title}</td><td>${d.period}</td>
+      <td class="r"><strong>${fmt(d.total)}</strong>원</td>
+      <td>${d.savedAt||''}</td>
+      <td style="display:flex;gap:4px">
+        <button class="btn btn-outline btn-sm" onclick="loadManualDraft(${drafts.length-1-i})">불러오기</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteManualDraft(${drafts.length-1-i})">삭제</button>
+      </td>
+    </tr>`).join(''):
+    '<tr><td colspan="6" style="text-align:center;color:#aaa;padding:16px">저장된 고지서 없음</td></tr>';
+  document.getElementById('manualDraftTbody').innerHTML=rows;
+  calcManualTotal();
+}
+
+function addManualItem(){
+  const wrap=document.getElementById('manualItems');
+  const div=document.createElement('div');
+  div.className='manual-item form-row';
+  div.style.cssText='align-items:center;gap:8px';
+  div.innerHTML=`
+    <div class="fg" style="flex:2"><label>항목명</label><input type="text" class="mr-label" placeholder="항목명"></div>
+    <div class="fg" style="flex:1"><label>금액(원)</label><input type="number" class="mr-amt" placeholder="0" oninput="calcManualTotal()"></div>
+    <div style="padding-top:20px"><button class="btn btn-danger btn-sm" onclick="removeManualItem(this)">✕</button></div>`;
+  wrap.appendChild(div);
+}
+
+function removeManualItem(btn){
+  btn.closest('.manual-item').remove();
+  calcManualTotal();
+}
+
+function calcManualTotal(){
+  const amts=[...document.querySelectorAll('.mr-amt')].map(i=>parseFloat(i.value)||0);
+  const total=amts.reduce((a,b)=>a+b,0);
+  document.getElementById('manualTotal').textContent=fmt(total)+'원';
+  return total;
+}
+
+function getManualItems(){
+  const labels=[...document.querySelectorAll('.mr-label')].map(i=>i.value.trim());
+  const amts=[...document.querySelectorAll('.mr-amt')].map(i=>parseFloat(i.value)||0);
+  return labels.map((l,i)=>({label:l||'(항목)',amt:amts[i]})).filter(x=>x.amt>0||x.label);
+}
+
+function buildManualReceiptHTML(){
+  const unit=document.getElementById('mr_unit').value||'　';
+  const title=document.getElementById('mr_title').value||'관리비 고지서';
+  const period=document.getElementById('mr_period').value||'';
+  const due=document.getElementById('mr_due').value||'';
+  const note=document.getElementById('mr_note').value||'';
+  const items=getManualItems();
+  const total=items.reduce((s,x)=>s+x.amt,0);
+  const itemRows=items.map(x=>`
+    <div class="rs-row"><span>${x.label}</span><span>${fmt(x.amt)}원</span></div>`).join('');
+  const dueFmt=due?due.replace(/-/g,'.'):'';
+
+  return `<div class="receipt-page">
+    <div class="receipt-title">
+      <h2>${title}</h2>
+      <p>경남프라자 ${unit}${period?' · '+period:''}</p>
+    </div>
+    <div class="receipt-unit-hdr">
+      <div>
+        <div style="font-size:9pt;color:#555">경남프라자</div>
+        <div class="unit-name">${unit}</div>
+      </div>
+      <div class="unit-meta">
+        ${dueFmt?`납기일: <strong>${dueFmt}</strong><br>`:''}
+        청구금액: <strong>${fmt(total)}원</strong>
+      </div>
+      <div class="receipt-stamp">인</div>
+    </div>
+    <div class="rs-box" style="margin-bottom:10px">
+      <div class="rs-box-title">■ 청구 내역</div>
+      ${itemRows}
+    </div>
+    <div class="receipt-total">
+      <div><div class="t-label">${title}</div></div>
+      <div style="text-align:right">
+        <div class="t-val">${fmt(total)}<span style="font-size:10pt">원</span></div>
+      </div>
+    </div>
+    ${note?`<div style="border:1px solid #ccc;padding:8px 10px;font-size:8.5pt;margin-top:8px;border-radius:4px;color:#555">${note}</div>`:''}
+    <div class="receipt-bank">
+      <div><strong>수납:</strong> 우리은행 1005-902-946812 (예금주: 경남프라자 관리단)</div>
+      <div><strong>T.</strong> 031-422-7474</div>
+    </div>
+  </div>`;
+}
+
+function previewManualReceipt(){
+  const html=buildManualReceiptHTML();
+  document.getElementById('manualReceiptPreview').innerHTML=
+    `<div style="border:1px solid var(--border);border-radius:8px;overflow:hidden">${html}</div>`;
+}
+
+function printManualReceipt(){
+  const html=buildManualReceiptHTML();
+  document.getElementById('printArea').innerHTML=`<div class="receipt-page">${html}</div>`;
+  showToast('인쇄 창에서 PDF로 저장 가능합니다');
+  setTimeout(()=>window.print(),300);
+}
+
+function saveManualDraft(){
+  if(!S.manualDrafts) S.manualDrafts=[];
+  const items=getManualItems();
+  const total=items.reduce((s,x)=>s+x.amt,0);
+  S.manualDrafts.push({
+    unit:document.getElementById('mr_unit').value,
+    title:document.getElementById('mr_title').value,
+    period:document.getElementById('mr_period').value,
+    due:document.getElementById('mr_due').value,
+    note:document.getElementById('mr_note').value,
+    items,total,savedAt:today()
+  });
+  saveData();renderManualReceipt();
+  showToast('임시저장 완료');
+}
+
+function loadManualDraft(i){
+  const d=S.manualDrafts[i];
+  if(!d) return;
+  document.getElementById('mr_unit').value=d.unit||'';
+  document.getElementById('mr_title').value=d.title||'';
+  document.getElementById('mr_period').value=d.period||'';
+  document.getElementById('mr_due').value=d.due||'';
+  document.getElementById('mr_note').value=d.note||'';
+  // 항목 복원
+  const wrap=document.getElementById('manualItems');
+  wrap.innerHTML='';
+  (d.items||[]).forEach(it=>{
+    const div=document.createElement('div');
+    div.className='manual-item form-row';
+    div.style.cssText='align-items:center;gap:8px';
+    div.innerHTML=`
+      <div class="fg" style="flex:2"><label>항목명</label><input type="text" class="mr-label" value="${it.label}"></div>
+      <div class="fg" style="flex:1"><label>금액(원)</label><input type="number" class="mr-amt" value="${it.amt}" oninput="calcManualTotal()"></div>
+      <div style="padding-top:20px"><button class="btn btn-danger btn-sm" onclick="removeManualItem(this)">✕</button></div>`;
+    wrap.appendChild(div);
+  });
+  calcManualTotal();
+  showToast('불러오기 완료');
+}
+
+function deleteManualDraft(i){
+  if(!confirm('삭제하시겠습니까?')) return;
+  S.manualDrafts.splice(i,1);
+  saveData();renderManualReceipt();
+}
+
+// ============================================================
+// 수리내역
+// ============================================================
+function renderRepairs(){
+  let rows='',total=0;
+  S.repairs.forEach((r,i)=>{
+    total+=r.amt;
+    rows+=`<tr><td>${r.date}</td><td>${r.desc}</td><td class="r">${fmt(r.amt)}</td><td>${r.note||''}</td>
+      <td><button class="btn btn-danger btn-sm" onclick="delRepair(${i})">삭제</button></td></tr>`;
+  });
+  document.getElementById('repairsTbl').innerHTML=rows;
+  document.getElementById('repairsFoot').innerHTML=`<tr><td colspan="2"><strong>합계</strong></td><td class="r"><strong>${fmt(total)}</strong>원</td><td colspan="2"></td></tr>`;
+}
+function addRepair(){
+  const date=document.getElementById('rep_date').value;
+  const desc=document.getElementById('rep_desc').value.trim();
+  const amt=parseInt(document.getElementById('rep_amt').value)||0;
+  const note=document.getElementById('rep_note').value.trim();
+  if(!date||!desc||!amt){showToast('날짜·내용·금액을 모두 입력하세요');return;}
+  S.repairs.push({date:date.replace(/-/g,'.'),desc,amt,note});
+  ['rep_date','rep_desc','rep_amt','rep_note'].forEach(id=>{document.getElementById(id).value='';});
+  saveData();renderRepairs();
+}
+function delRepair(i){if(confirm('삭제하시겠습니까?')){S.repairs.splice(i,1);saveData();renderRepairs();}}
+
+// ============================================================
+// 가수금
+// ============================================================
+function renderGason(){
+  let rows='',cum=0;
+  S.gason.forEach((g,i)=>{
+    cum+=g.amt;
+    rows+=`<tr><td>${g.date}</td><td>${g.desc}</td>
+      <td class="r" style="color:${g.amt>=0?'var(--red)':'var(--green)'}">${g.amt>=0?'+':'-'}${fmt(Math.abs(g.amt))}</td>
+      <td class="r" style="font-weight:${cum===0?700:400}">${fmt(cum)}</td>
+      <td><button class="btn btn-danger btn-sm" onclick="delGason(${i})">삭제</button></td></tr>`;
+  });
+  document.getElementById('gasonTbl').innerHTML=rows;
+}
+function addGason(){
+  const date=document.getElementById('gs_date').value.trim();
+  const desc=document.getElementById('gs_desc').value.trim();
+  const amt=parseFloat(document.getElementById('gs_amt').value)||0;
+  if(!date||!desc){showToast('일자와 내용을 입력하세요');return;}
+  S.gason.push({date,desc,amt});
+  ['gs_date','gs_desc','gs_amt'].forEach(id=>{document.getElementById(id).value='';});
+  saveData();renderGason();
+}
+function delGason(i){if(confirm('삭제?')){S.gason.splice(i,1);saveData();renderGason();}}
+
+// ============================================================
+// 고정부과 설정
+// ============================================================
+function renderFixed(){
+  const html=Object.entries(S.fixed).map(([k,v])=>`
+    <div class="form-row" style="margin-bottom:8px">
+      <div class="fg"><label>${k}</label><input type="number" id="fs_${k}" value="${v}" oninput="updateFixedTotal()"></div>
+    </div>`).join('');
+  document.getElementById('fixedSettingForm').innerHTML=html;
+  updateFixedTotal();
+}
+function updateFixedTotal(){
+  const total=Object.keys(S.fixed).reduce((s,k)=>{
+    return s+(parseFloat(document.getElementById('fs_'+k)?.value)||0);
+  },0);
+  document.getElementById('fixedTotal').textContent=`합계: ${fmt(total)}원/월`;
+}
+function saveFixed(){
+  Object.keys(S.fixed).forEach(k=>{
+    const v=parseFloat(document.getElementById('fs_'+k)?.value)||0;
+    S.fixed[k]=v;
+  });
+  saveData();showToast('고정부과 저장 완료');
+}
+
+// ============================================================
+// 모달
+// ============================================================
+function showModal(title,body,footer){
+  document.getElementById('modalTitle').innerHTML=title;
+  document.getElementById('modalBody').innerHTML=body;
+  document.getElementById('modalFooter').innerHTML=footer||'<button class="btn btn-outline" onclick="closeModal()">닫기</button>';
+  document.getElementById('modal').style.display='flex';
+}
+function closeModal(){document.getElementById('modal').style.display='none';}
+
+// ============================================================
+// 초기화
+// ============================================================
+window.addEventListener('load',()=>{
+  // 4~12월 데이터 기본값 생성
+  for(let m=4;m<=12;m++) ensureMonth(m);
+  // 납기일 기본값
+  const d=new Date();
+  d.setMonth(d.getMonth());d.setDate(25);
+  const dd=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-25`;
+  const rcptDD=document.getElementById('rcpt_duedate');
+  if(rcptDD) rcptDD.value=dd;
+  renderDashboard();
+});
+
+// ============================================================
+// 비밀번호 인증
+// ============================================================
+(function(){
+  // 비밀번호 설정 (SHA256 해시로 저장 - 원본: kyungnam2026!)
+  // 변경하려면 아래 HASH 값을 새 비밀번호의 SHA256으로 교체
+  const CORRECT = 'dlwlsrud1@';
+  const SESSION_KEY = 'kn_auth_2026';
+
+  async function sha256(str){
+    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+    return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+  }
+
+  window.checkPw = async function(){
+    const input = document.getElementById('pwInput').value;
+    const err = document.getElementById('pwErr');
+    if(!input){ err.textContent='비밀번호를 입력해주세요.'; return; }
+    const hash = await sha256(input);
+    const correctHash = await sha256(CORRECT);
+    if(hash === correctHash){
+      sessionStorage.setItem(SESSION_KEY,'1');
+      document.getElementById('lockScreen').style.display='none';
+      document.getElementById('appWrapper').style.display='block';
+      err.textContent='';
+    } else {
+      err.textContent='비밀번호가 올바르지 않습니다.';
+      document.getElementById('pwInput').value='';
+      document.getElementById('pwInput').focus();
+    }
+  };
+
+  // 세션 유지 확인
+  window.addEventListener('DOMContentLoaded',()=>{
+    if(sessionStorage.getItem(SESSION_KEY)==='1'){
+      document.getElementById('lockScreen').style.display='none';
+      document.getElementById('appWrapper').style.display='block';
+    }
+  });
+})();
+</script>
+</div><!-- /appWrapper -->
+</body>
+</html>
