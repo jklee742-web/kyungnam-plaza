@@ -225,6 +225,7 @@
   }
   /* 고지서 스타일 - 흑백 인쇄 최적화 */
   #print-area { display:none; }
+  #print-preview-wrap #print-area { display:block; }
   .notice-page {
     width:210mm; min-height:297mm; background:white; color:#000;
     font-family:'Noto Sans KR',sans-serif; font-size:9pt;
@@ -1700,6 +1701,15 @@ function clearOverdue(room) {
 function renderUtility() {
   const k = monthKey();
   const mdata = state.meters[k] || {};
+
+  // 저장된 설정값을 입력 필드에 반영
+  const elecEl = document.getElementById('util-elec-total');
+  const waterTonEl = document.getElementById('util-water-total');
+  const waterFeeEl = document.getElementById('util-water-fee');
+  if(elecEl && !elecEl.value) elecEl.value = state.settings.elecFixed || '';
+  if(waterTonEl && !waterTonEl.value) waterTonEl.value = state.settings.waterTotal || '';
+  if(waterFeeEl && !waterFeeEl.value) waterFeeEl.value = state.settings.waterFee || '';
+
   updateUtilCalc();
 
   // 전용수도 검침 테이블
