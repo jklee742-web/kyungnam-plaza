@@ -220,78 +220,89 @@
     .main { margin:0!important; padding:0!important; }
     body { background:white!important; }
     #print-area { display:block!important; }
-    .notice-page { page-break-after:always; }
+    .notice-page {
+      page-break-after:always; page-break-inside:avoid;
+      margin:0!important; border:none!important;
+    }
     .notice-page:last-child { page-break-after:avoid; }
   }
-  /* 고지서 스타일 - 심플 흑백 인쇄 */
+  /* 고지서 스타일 - A4 전체 채움 */
   #print-area { display:none; }
   #print-preview-wrap #print-area { display:block; }
   .notice-page {
-    width:210mm; background:white; color:#111;
-    font-family:'Noto Sans KR',sans-serif; font-size:9pt;
-    margin:0 auto 24px; padding:10mm 12mm; box-sizing:border-box;
+    width:210mm; height:297mm; background:white; color:#111;
+    font-family:'Noto Sans KR',sans-serif; font-size:10pt;
+    margin:0 auto 24px; padding:12mm 14mm; box-sizing:border-box;
     border:1px solid #bbb;
+    display:flex; flex-direction:column;
   }
   /* 고지서 헤더 */
   .nb-header {
-    display:flex; align-items:center; justify-content:space-between;
-    border-bottom:2px solid #111; padding-bottom:5px; margin-bottom:8px;
+    display:flex; align-items:flex-start; justify-content:space-between;
+    border-bottom:2.5px solid #111; padding-bottom:8px; margin-bottom:12px;
+    flex-shrink:0;
   }
-  .nb-title { font-size:14pt; font-weight:900; letter-spacing:2px; }
-  .nb-period { font-size:9pt; color:#444; }
-  .nb-bldg-info { font-size:8pt; color:#555; text-align:right; line-height:1.6; }
+  .nb-title { font-size:17pt; font-weight:900; letter-spacing:3px; }
+  .nb-period { font-size:9.5pt; color:#444; margin-top:4px; }
+  .nb-bldg-info { font-size:9pt; color:#555; text-align:right; line-height:1.9; }
   /* 상단 2단: 내역(좌) + 청구금액 박스(우) */
-  .nb-top { display:flex; gap:8px; margin-bottom:6px; }
-  .nb-left { flex:1; }
-  .nb-right { width:68mm; }
+  .nb-top { display:flex; gap:10px; flex:1; margin-bottom:8px; min-height:0; }
+  .nb-left { flex:1; display:flex; flex-direction:column; gap:6px; min-height:0; }
+  .nb-right { width:76mm; flex-shrink:0; }
   /* 청구 금액 박스 */
   .nb-amount-box {
-    border:2px solid #111; padding:8px 10px; height:100%;
+    border:2.5px solid #111; padding:14px 16px; height:100%;
     display:flex; flex-direction:column; justify-content:center; box-sizing:border-box;
   }
-  .nb-room-line { display:flex; align-items:baseline; gap:4px; margin-bottom:6px; border-bottom:1px solid #ddd; padding-bottom:5px; }
-  .nb-room-num { font-size:26pt; font-weight:900; line-height:1; }
-  .nb-room-ho  { font-size:12pt; font-weight:700; }
-  .nb-amt-row  { display:flex; justify-content:space-between; align-items:center; margin-bottom:3px; }
-  .nb-amt-label { font-size:8.5pt; color:#444; }
-  .nb-amt-val  { font-size:8.5pt; font-weight:700; }
-  .nb-amt-main { border-top:1px solid #999; padding-top:5px; margin-top:4px; display:flex; justify-content:space-between; align-items:center; }
-  .nb-amt-main-label { font-size:9pt; font-weight:700; }
-  .nb-amt-main-val   { font-size:15pt; font-weight:900; }
+  .nb-room-line { display:flex; align-items:baseline; gap:5px; margin-bottom:12px; border-bottom:1.5px solid #ddd; padding-bottom:10px; }
+  .nb-room-num { font-size:44pt; font-weight:900; line-height:1; }
+  .nb-room-ho  { font-size:20pt; font-weight:700; }
+  .nb-amt-row  { display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; }
+  .nb-amt-label { font-size:9.5pt; color:#444; }
+  .nb-amt-val  { font-size:9.5pt; font-weight:700; }
+  .nb-amt-main { border-top:1.5px solid #999; padding-top:10px; margin-top:10px; display:flex; justify-content:space-between; align-items:center; }
+  .nb-amt-main-label { font-size:10pt; font-weight:700; }
+  .nb-amt-main-val   { font-size:19pt; font-weight:900; }
   /* 내역 테이블 */
-  .nb-tbl { width:100%; border-collapse:collapse; font-size:8.5pt; }
-  .nb-tbl td { border:1px solid #bbb; padding:3px 6px; vertical-align:middle; }
-  .nb-tbl .hd { background:#f2f2f2; font-weight:700; text-align:center; font-size:8pt; border-color:#999; }
-  .nb-tbl .lbl { background:#f8f8f8; color:#444; width:32%; }
+  .nb-tbl { width:100%; border-collapse:collapse; font-size:10pt; }
+  .nb-tbl td { border:1px solid #bbb; padding:6px 9px; vertical-align:middle; }
+  .nb-tbl .hd { background:#f0f0f0; font-weight:700; text-align:center; font-size:9.5pt; border-color:#999; padding:7px; }
+  .nb-tbl .lbl { background:#f8f8f8; color:#444; width:34%; }
   .nb-tbl .r { text-align:right; }
   .nb-tbl .c { text-align:center; }
-  .nb-tbl .sum-row td { background:#ebebeb; font-weight:700; border-top:1.5px solid #777; }
+  .nb-tbl .sum-row td { background:#e8e8e8; font-weight:700; border-top:1.5px solid #777; font-size:10.5pt; padding:7px 9px; }
+  /* 하단 안내사항 (flex:1 로 남은 공간 채움) */
+  .nb-notes {
+    flex:1; border:1px solid #ddd; padding:10px 12px;
+    font-size:9pt; color:#555; line-height:1.8; background:#fafafa;
+  }
+  .nb-notes strong { font-size:9.5pt; color:#333; }
   /* 납부 정보 */
-  .nb-pay-box { border:1px solid #bbb; margin-top:6px; font-size:8.5pt; }
-  .nb-pay-hd  { background:#f2f2f2; font-weight:700; padding:3px 8px; font-size:8pt; border-bottom:1px solid #bbb; }
-  .nb-pay-row { display:flex; padding:3px 8px; border-bottom:1px solid #eee; }
+  .nb-pay-box { border:1px solid #bbb; font-size:9.5pt; flex-shrink:0; }
+  .nb-pay-hd  { background:#f0f0f0; font-weight:700; padding:6px 10px; font-size:9pt; border-bottom:1px solid #bbb; letter-spacing:1px; }
+  .nb-pay-row { display:flex; padding:5px 10px; border-bottom:1px solid #eee; }
   .nb-pay-row:last-child { border-bottom:none; }
-  .nb-pay-key { color:#555; width:60px; flex-shrink:0; }
+  .nb-pay-key { color:#555; width:72px; flex-shrink:0; }
   .nb-pay-val { font-weight:600; }
   /* 절취선 */
   .nb-cut {
     border:none; border-top:1.5px dashed #aaa; margin:10px 0;
-    position:relative; text-align:center;
+    position:relative; text-align:center; flex-shrink:0;
   }
   .nb-cut-label {
     position:absolute; top:-8px; left:50%; transform:translateX(-50%);
-    background:white; padding:0 6px; font-size:7.5pt; color:#999; white-space:nowrap;
+    background:white; padding:0 8px; font-size:8pt; color:#999; white-space:nowrap;
   }
   /* 납입 영수증 (하단) */
-  .nb-rcpt { display:flex; align-items:stretch; gap:0; border:1px solid #999; font-size:8.5pt; }
-  .nb-rcpt-left  { flex:1; padding:7px 10px; border-right:1px solid #bbb; }
-  .nb-rcpt-right { width:34mm; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:7px; text-align:center; }
-  .nb-rcpt-title { font-size:9pt; font-weight:900; letter-spacing:1px; border-bottom:1px solid #ddd; padding-bottom:4px; margin-bottom:5px; }
-  .nb-rcpt-row { display:flex; justify-content:space-between; margin-bottom:2px; }
+  .nb-rcpt { display:flex; align-items:stretch; gap:0; border:1.5px solid #999; font-size:9.5pt; flex-shrink:0; }
+  .nb-rcpt-left  { flex:1; padding:10px 14px; border-right:1px solid #bbb; }
+  .nb-rcpt-right { width:38mm; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:10px; text-align:center; }
+  .nb-rcpt-title { font-size:10.5pt; font-weight:900; letter-spacing:1px; border-bottom:1px solid #ddd; padding-bottom:6px; margin-bottom:7px; }
+  .nb-rcpt-row { display:flex; justify-content:space-between; margin-bottom:3px; }
   .nb-rcpt-key { color:#555; }
   .nb-rcpt-val { font-weight:600; }
-  .nb-rcpt-total { margin-top:4px; border-top:1px solid #999; padding-top:4px; display:flex; justify-content:space-between; font-weight:700; font-size:9.5pt; }
-  .nb-stamp { font-size:7.5pt; color:#888; margin-top:6px; }
+  .nb-rcpt-total { margin-top:6px; border-top:1.5px solid #999; padding-top:6px; display:flex; justify-content:space-between; font-weight:700; font-size:11pt; }
+  .nb-stamp { font-size:8.5pt; color:#888; margin-top:8px; border:1px solid #ccc; padding:5px 14px; }
   /* 중간정산 */
   .interim-form { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:20px; margin-bottom:20px; }
 </style>
@@ -2137,7 +2148,6 @@ function buildNoticeHTML(room, k) {
         <tr><td class="lbl">전용수도요금</td><td class="r">${privAmt ? privAmt.toLocaleString() : '-'}</td></tr>
         <tr class="sum-row"><td>당월 합계</td><td class="r">${d.total.toLocaleString()}</td></tr>
       </table>
-      <div style="height:5px;"></div>
       <table class="nb-tbl">
         <tr>
           <td class="hd">구분</td><td class="hd">전월</td><td class="hd">당월</td>
@@ -2145,6 +2155,13 @@ function buildNoticeHTML(room, k) {
         </tr>
         ${mRow}
       </table>
+      <div class="nb-notes">
+        <strong>안내사항</strong><br>
+        · 납부기한을 경과하면 미납금액에 대한 연체료가 부과됩니다.<br>
+        · 연체요율: 연 2.325% (납부기한 익일부터 기산)<br>
+        · 관리비 관련 문의: 031-422-7474<br>
+        · 납부기한: ${dueDateDisp} 까지
+      </div>
     </div>
     <div class="nb-right">
       <div class="nb-amount-box">
@@ -2170,7 +2187,11 @@ function buildNoticeHTML(room, k) {
         </div>
         <div class="nb-amt-row" style="margin-top:3px;">
           <span class="nb-amt-label">납기후 금액</span>
-          <span class="nb-amt-val" style="color:#666;font-size:8pt;">${afterDueAmt.toLocaleString()}</span>
+          <span class="nb-amt-val" style="color:#666;font-size:9pt;">${afterDueAmt.toLocaleString()}</span>
+        </div>
+        <div style="margin-top:14px;padding-top:10px;border-top:1px solid #ddd;font-size:8.5pt;color:#555;text-align:center;line-height:1.7;">
+          납 부 기 한<br>
+          <span style="font-size:11pt;font-weight:700;color:#111;">${dueDateDisp}</span>
         </div>
       </div>
     </div>
@@ -2226,9 +2247,9 @@ function buildNoticeHTML(room, k) {
       </div>
     </div>
     <div class="nb-rcpt-right">
-      <div style="font-size:16pt;font-weight:900;line-height:1;">${roomNum}</div>
-      <div style="font-size:10pt;font-weight:700;margin-bottom:8px;">호</div>
-      <div style="font-size:7.5pt;color:#555;">경남프라자</div>
+      <div style="font-size:22pt;font-weight:900;line-height:1;">${roomNum}</div>
+      <div style="font-size:13pt;font-weight:700;margin-bottom:10px;">호</div>
+      <div style="font-size:8.5pt;color:#555;">경남프라자</div>
       <div class="nb-stamp">수납인</div>
     </div>
   </div>
@@ -2414,6 +2435,13 @@ function renderInterimPreview(room, baseKey, finalAmt, daysUsed, daysInMonth, av
         <tr><td class="lbl">우리은행</td><td>1005-902-946812</td></tr>
         <tr><td class="lbl">예금주</td><td>경남프라자 관리단</td></tr>
       </table>
+      <div class="nb-notes">
+        <strong>안내사항</strong><br>
+        · 중간정산은 실제 사용일 기준으로 안분 계산됩니다.<br>
+        · 미납금액에는 기존 미납분 및 연체료가 포함됩니다.<br>
+        · 연체요율: 연 2.325% (납부기한 익일부터 기산)<br>
+        · 관리비 관련 문의: 031-422-7474
+      </div>
     </div>
     <div class="nb-right">
       <div class="nb-amount-box">
@@ -2432,6 +2460,10 @@ function renderInterimPreview(room, baseKey, finalAmt, daysUsed, daysInMonth, av
         <div class="nb-amt-main">
           <span class="nb-amt-main-label">청구 금액</span>
           <span class="nb-amt-main-val">${grandTotal.toLocaleString()}</span>
+        </div>
+        <div style="margin-top:14px;padding-top:10px;border-top:1px solid #ddd;font-size:8.5pt;color:#555;text-align:center;line-height:1.7;">
+          발 행 일<br>
+          <span style="font-size:11pt;font-weight:700;color:#111;">${issueDateStr}</span>
         </div>
       </div>
     </div>
@@ -2479,9 +2511,9 @@ function renderInterimPreview(room, baseKey, finalAmt, daysUsed, daysInMonth, av
       </div>
     </div>
     <div class="nb-rcpt-right">
-      <div style="font-size:16pt;font-weight:900;line-height:1;">${roomNum}</div>
-      <div style="font-size:10pt;font-weight:700;margin-bottom:8px;">호</div>
-      <div style="font-size:7.5pt;color:#555;">경남프라자</div>
+      <div style="font-size:22pt;font-weight:900;line-height:1;">${roomNum}</div>
+      <div style="font-size:13pt;font-weight:700;margin-bottom:10px;">호</div>
+      <div style="font-size:8.5pt;color:#555;">경남프라자</div>
       <div class="nb-stamp">수납인</div>
     </div>
   </div>
