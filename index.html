@@ -326,6 +326,19 @@
     <div class="nav-item" onclick="showPage('settings')">
       <span class="icon">⚙️</span> 고정부과 설정
     </div>
+    <div class="nav-section">데이터</div>
+    <div class="nav-item" onclick="exportData()">
+      <span class="icon">💾</span> 백업 (JSON)
+    </div>
+    <div class="nav-item" onclick="importData()">
+      <span class="icon">📂</span> 복원 (JSON)
+    </div>
+    <div class="nav-item" onclick="clearAllData()" style="color:var(--red);">
+      <span class="icon">🗑️</span> 초기화
+    </div>
+  </div>
+  <div style="padding:12px 16px;font-size:10px;color:var(--text3);border-top:1px solid var(--border);" id="save-status">
+    자동저장 대기중
   </div>
 </nav>
 
@@ -1026,6 +1039,77 @@ function initData() {
   ];
 }
 
+// ===== LOCALSTORAGE =====
+const STORAGE_KEY = 'kyungnam_plaza_v1';
+
+function saveState() {
+  try {
+    const toSave = {
+      year: state.year, month: state.month,
+      settings: state.settings,
+      billingData: state.billingData,
+      payments: state.payments,
+      meters: state.meters,
+      repair: state.repair,
+      gasueum: state.gasueum,
+      overdueList: state.overdueList,
+    };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(toSave));
+    const now = new Date();
+    const ts = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
+    const el = document.getElementById('save-status');
+    if (el) el.textContent = `✅ 저장됨 ${ts}`;
+  } catch(e) { console.warn('저장 실패:', e); }
+}
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return false;
+    const saved = JSON.parse(raw);
+    Object.assign(state, saved);
+    return true;
+  } catch(e) { console.warn('불러오기 실패:', e); return false; }
+}
+
+function exportData() {
+  const data = localStorage.getItem(STORAGE_KEY) || '{}';
+  const blob = new Blob([data], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `kyungnam_${new Date().toISOString().slice(0,10)}.json`;
+  a.click(); URL.revokeObjectURL(url);
+}
+
+function importData() {
+  const input = document.createElement('input');
+  input.type = 'file'; input.accept = '.json';
+  input.onchange = e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      try {
+        const parsed = JSON.parse(ev.target.result);
+        Object.assign(state, parsed);
+        rebuildOverdueCompat();
+        updateMonthDisplays();
+        renderCurrentPage();
+        saveState();
+        alert('데이터를 불러왔습니다.');
+      } catch(err) { alert('파일 형식이 올바르지 않습니다.'); }
+    };
+    reader.readAsText(file);
+  };
+  input.click();
+}
+
+function clearAllData() {
+  if (!confirm('모든 데이터를 초기화하시겠습니까?\n이 작업은 되돌릴 수 없습니다.')) return;
+  localStorage.removeItem(STORAGE_KEY);
+  location.reload();
+}
+
 // ===== UTILS =====
 const won = n => n ? (Math.round(n)).toLocaleString() + '원' : '-';
 const wonNum = n => n ? (Math.round(n)).toLocaleString() : '-';
@@ -1273,6 +1357,7 @@ function saveBilling() {
   });
 
   rebuildOverdueCompat();
+  saveState();
   alert('저장 완료! (' + k + ' 정산)\n연체현황에 ' + newCount + '개 호실 자동 등록됨');
 }
 
@@ -1439,6 +1524,7 @@ function processPayment() {
   });
 
   rebuildOverdueCompat();
+  saveState();
   closeModal('payment-modal');
   renderPayment();
   alert(room + ' 납부 처리 완료 (' + wonNum(amount) + ')\n연체현황에서 완납 호실 자동 제거됨');
@@ -1463,6 +1549,7 @@ function deletePayment(idx) {
   }
   state.payments.splice(idx, 1);
   rebuildOverdueCompat();
+  saveState();
   renderPaymentHistory();
 }
 
@@ -1686,6 +1773,7 @@ function saveAddOverdue() {
   if(exists) { alert('이미 등록된 미납 내역입니다.'); return; }
   state.overdueList.push({room, month, amount, paid:false});
   rebuildOverdueCompat();
+  saveState();
   closeModal('add-overdue-modal');
   renderOverdue();
 }
@@ -1802,6 +1890,7 @@ function saveMeter() {
     const fee = Math.round(usage * rate / 10) * 10;
     state.meters[k][r] = {prev, curr, usage, fee};
   });
+  saveState();
   alert('검침값 저장 완료!');
   renderUtility();
 }
@@ -1850,6 +1939,7 @@ function saveRepair() {
   if(!date||!content||!amount) { alert('날짜, 내용, 금액을 입력하세요.'); return; }
   state.repair.push({date,content,amount,payee:document.getElementById('repair-payee').value,note:document.getElementById('repair-note').value});
   state.repair.sort((a,b)=>a.date.localeCompare(b.date));
+  saveState();
   closeModal('repair-modal');
   renderRepair();
 }
@@ -1857,6 +1947,7 @@ function saveRepair() {
 function deleteRepair(idx) {
   if(!confirm('삭제하시겠습니까?')) return;
   state.repair.splice(idx,1);
+  saveState();
   renderRepair();
 }
 
@@ -1902,6 +1993,7 @@ function saveGasueum() {
   if(!date||!content) { alert('필수 항목을 입력하세요.'); return; }
   state.gasueum.push({date,content,amount});
   state.gasueum.sort((a,b)=>a.date.localeCompare(b.date));
+  saveState();
   closeModal('gasueum-modal');
   renderGasueum();
 }
@@ -1909,6 +2001,7 @@ function saveGasueum() {
 function deleteGasueum(idx) {
   if(!confirm('삭제하시겠습니까?')) return;
   state.gasueum.splice(idx,1);
+  saveState();
   renderGasueum();
 }
 
@@ -1951,6 +2044,7 @@ function updateFixed(key, val) {
 
 function saveSettings() {
   state.settings.lateRate = parseFloat(document.getElementById('late-rate-input').value)/100 || 0.02325;
+  saveState();
   alert('설정이 저장되었습니다.');
 }
 
@@ -2373,10 +2467,13 @@ document.querySelectorAll('.modal-backdrop').forEach(m => {
 });
 
 // ===== INIT =====
-initData();
+const hasSaved = loadState();
+if (!hasSaved) initData();
 rebuildOverdueCompat();
 updateMonthDisplays();
 renderDashboard();
+const saveEl = document.getElementById('save-status');
+if (saveEl) saveEl.textContent = hasSaved ? '✅ 저장된 데이터 로드됨' : '엑셀 초기값 사용중';
 </script>
 </body>
 </html>
