@@ -1318,10 +1318,17 @@ function calcAll() {
   // 전용수도 사용량 (기존 or 0)
   const meterData = state.meters[k] || {};
 
+  // 전용수도 합계를 먼저 계산 → 공용수도 배분액 = 수도요금 총액 - 전용수도 합계
+  const totalPrivWater = PRIV_WATER_ROOMS.reduce((sum, room) => {
+    const m = meterData[room];
+    return sum + (m ? m.fee : (state.billingData[k][room]?.privWater || 0));
+  }, 0);
+  const pubWaterFee = waterFee - totalPrivWater;
+
   ROOMS.forEach(r => {
     const share = r.share;
     const elec = Math.round(elecTotal * share / 10) * 10;
-    const water = Math.round(waterFee * share / 10) * 10;
+    const water = Math.round(pubWaterFee * share / 10) * 10;
     const privMeter = meterData[r.id];
     const privWater = privMeter ? privMeter.fee : (state.billingData[k][r.id]?.privWater || 0);
     const fixed = Math.round(fixedTotal * share / 10) * 10;
