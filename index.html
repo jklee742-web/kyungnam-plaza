@@ -223,61 +223,75 @@
     .notice-page { page-break-after:always; }
     .notice-page:last-child { page-break-after:avoid; }
   }
-  /* 고지서 스타일 - 흑백 인쇄 최적화 */
+  /* 고지서 스타일 - 심플 흑백 인쇄 */
   #print-area { display:none; }
   #print-preview-wrap #print-area { display:block; }
   .notice-page {
-    width:210mm; min-height:297mm; background:white; color:#000;
+    width:210mm; background:white; color:#111;
     font-family:'Noto Sans KR',sans-serif; font-size:9pt;
-    margin:0 auto 20px; padding:13mm 14mm; box-sizing:border-box;
-    border:1px solid #ccc;
+    margin:0 auto 24px; padding:10mm 12mm; box-sizing:border-box;
+    border:1px solid #bbb;
   }
-  /* 섹션 헤더 - 굵은 실선 + 진한 배경으로 흑백 구분 */
-  .n-sec-hd {
-    background:#222; color:#fff; font-weight:700; font-size:9pt;
-    text-align:center; padding:4px 0; letter-spacing:1px; margin-bottom:0;
+  /* 고지서 헤더 */
+  .nb-header {
+    display:flex; align-items:center; justify-content:space-between;
+    border-bottom:2px solid #111; padding-bottom:5px; margin-bottom:8px;
   }
-  .n-sec-hd2 {
-    background:#555; color:#fff; font-weight:700; font-size:8.5pt;
-    text-align:center; padding:3px 0; letter-spacing:0.5px; margin-bottom:0;
+  .nb-title { font-size:14pt; font-weight:900; letter-spacing:2px; }
+  .nb-period { font-size:9pt; color:#444; }
+  .nb-bldg-info { font-size:8pt; color:#555; text-align:right; line-height:1.6; }
+  /* 상단 2단: 내역(좌) + 청구금액 박스(우) */
+  .nb-top { display:flex; gap:8px; margin-bottom:6px; }
+  .nb-left { flex:1; }
+  .nb-right { width:68mm; }
+  /* 청구 금액 박스 */
+  .nb-amount-box {
+    border:2px solid #111; padding:8px 10px; height:100%;
+    display:flex; flex-direction:column; justify-content:center; box-sizing:border-box;
   }
-  /* 공통 테이블 */
-  .n-tbl { width:100%; border-collapse:collapse; margin-bottom:0; }
-  .n-tbl td, .n-tbl th {
-    border:1px solid #444; padding:3.5px 7px; font-size:8.5pt; vertical-align:middle;
+  .nb-room-line { display:flex; align-items:baseline; gap:4px; margin-bottom:6px; border-bottom:1px solid #ddd; padding-bottom:5px; }
+  .nb-room-num { font-size:26pt; font-weight:900; line-height:1; }
+  .nb-room-ho  { font-size:12pt; font-weight:700; }
+  .nb-amt-row  { display:flex; justify-content:space-between; align-items:center; margin-bottom:3px; }
+  .nb-amt-label { font-size:8.5pt; color:#444; }
+  .nb-amt-val  { font-size:8.5pt; font-weight:700; }
+  .nb-amt-main { border-top:1px solid #999; padding-top:5px; margin-top:4px; display:flex; justify-content:space-between; align-items:center; }
+  .nb-amt-main-label { font-size:9pt; font-weight:700; }
+  .nb-amt-main-val   { font-size:15pt; font-weight:900; }
+  /* 내역 테이블 */
+  .nb-tbl { width:100%; border-collapse:collapse; font-size:8.5pt; }
+  .nb-tbl td { border:1px solid #bbb; padding:3px 6px; vertical-align:middle; }
+  .nb-tbl .hd { background:#f2f2f2; font-weight:700; text-align:center; font-size:8pt; border-color:#999; }
+  .nb-tbl .lbl { background:#f8f8f8; color:#444; width:32%; }
+  .nb-tbl .r { text-align:right; }
+  .nb-tbl .c { text-align:center; }
+  .nb-tbl .sum-row td { background:#ebebeb; font-weight:700; border-top:1.5px solid #777; }
+  /* 납부 정보 */
+  .nb-pay-box { border:1px solid #bbb; margin-top:6px; font-size:8.5pt; }
+  .nb-pay-hd  { background:#f2f2f2; font-weight:700; padding:3px 8px; font-size:8pt; border-bottom:1px solid #bbb; }
+  .nb-pay-row { display:flex; padding:3px 8px; border-bottom:1px solid #eee; }
+  .nb-pay-row:last-child { border-bottom:none; }
+  .nb-pay-key { color:#555; width:60px; flex-shrink:0; }
+  .nb-pay-val { font-weight:600; }
+  /* 절취선 */
+  .nb-cut {
+    border:none; border-top:1.5px dashed #aaa; margin:10px 0;
+    position:relative; text-align:center;
   }
-  .n-tbl th { background:#ddd; font-weight:700; text-align:center; }
-  .n-tbl .lbl { background:#eee; font-weight:500; width:38%; }
-  .n-tbl .lbl-b { background:#ddd; font-weight:700; }
-  .n-tbl .r { text-align:right; }
-  .n-tbl .c { text-align:center; }
-  .n-tbl .bold { font-weight:700; }
-  .n-tbl .total-row { background:#bbb; font-weight:700; font-size:9.5pt; border-top:2px solid #000; }
-  .n-tbl .claim-row { background:#ddd; font-weight:700; }
-  /* 상단 2단 레이아웃 */
-  .n-top { display:table; width:100%; margin-bottom:0; }
-  .n-top-left { display:table-cell; width:54%; vertical-align:top; padding-right:6px; }
-  .n-top-right { display:table-cell; width:46%; vertical-align:top; }
-  /* 고지서 박스 */
-  .n-bill-box {
-    border:2px solid #000; height:100%; min-height:148px;
-    display:flex; flex-direction:column; align-items:center; justify-content:center;
-    padding:10px; text-align:center; box-sizing:border-box;
+  .nb-cut-label {
+    position:absolute; top:-8px; left:50%; transform:translateX(-50%);
+    background:white; padding:0 6px; font-size:7.5pt; color:#999; white-space:nowrap;
   }
-  .n-bill-tag { font-size:12pt; font-weight:900; letter-spacing:2px; border-bottom:1px solid #000; width:100%; text-align:center; padding-bottom:5px; margin-bottom:8px; }
-  .n-bill-sub { font-size:8pt; color:#333; margin-bottom:12px; }
-  .n-bill-bldg { font-size:8.5pt; color:#444; margin-top:6px; }
-  .n-bill-room { font-size:22pt; font-weight:900; letter-spacing:-1px; margin:4px 0; }
-  .n-bill-ho { font-size:14pt; font-weight:700; }
-  /* 점선 구분 */
-  .n-sep { border:none; border-top:1.5px dashed #666; margin:8px 0; }
-  /* 하단 서명 */
-  .n-footer { text-align:center; margin-top:10px; }
-  .n-bldg-name { font-size:12.5pt; font-weight:900; letter-spacing:0.5px; }
-  .n-tel { font-size:8pt; color:#555; margin-top:2px; letter-spacing:1px; }
-  .n-note { font-size:7.5pt; color:#555; margin-top:8px; border-top:1px solid #aaa; padding-top:5px; }
-  .n-gap { height:6px; }
-  .n-gap2 { height:10px; }
+  /* 납입 영수증 (하단) */
+  .nb-rcpt { display:flex; align-items:stretch; gap:0; border:1px solid #999; font-size:8.5pt; }
+  .nb-rcpt-left  { flex:1; padding:7px 10px; border-right:1px solid #bbb; }
+  .nb-rcpt-right { width:34mm; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:7px; text-align:center; }
+  .nb-rcpt-title { font-size:9pt; font-weight:900; letter-spacing:1px; border-bottom:1px solid #ddd; padding-bottom:4px; margin-bottom:5px; }
+  .nb-rcpt-row { display:flex; justify-content:space-between; margin-bottom:2px; }
+  .nb-rcpt-key { color:#555; }
+  .nb-rcpt-val { font-weight:600; }
+  .nb-rcpt-total { margin-top:4px; border-top:1px solid #999; padding-top:4px; display:flex; justify-content:space-between; font-weight:700; font-size:9.5pt; }
+  .nb-stamp { font-size:7.5pt; color:#888; margin-top:6px; }
   /* 중간정산 */
   .interim-form { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:20px; margin-bottom:20px; }
 </style>
@@ -2097,7 +2111,7 @@ function buildNoticeHTML(room, k) {
     ? `<tr><td class="lbl">전용수도</td><td class="r">${meterData.prev||'-'}</td><td class="r">${meterData.curr||'-'}</td><td class="c">${meterData.usage||0}</td><td class="r">${(meterData.fee||0).toLocaleString()}</td></tr>`
     : `<tr><td class="lbl">전용수도</td><td class="c">-</td><td class="c">-</td><td class="c">-</td><td class="c">-</td></tr>`;
 
-  // 납입영수증 항목 (계산된 값 기준)
+  // 요금 항목
   const fixedAmt = d.fixed ? Math.round(d.fixed) : 0;
   const elecAmt  = d.elec  ? Math.round(d.elec)  : 0;
   const waterAmt = d.water ? Math.round(d.water) : 0;
@@ -2105,100 +2119,118 @@ function buildNoticeHTML(room, k) {
 
   return `<div class="notice-page">
 
-  <!-- ═══ 상단 2단: 명세서(좌) + 고지서박스(우) ═══ -->
-  <div class="n-top">
-    <div class="n-top-left">
+  <div class="nb-header">
+    <div>
+      <div class="nb-title">관리비 고지서</div>
+      <div class="nb-period">${ky}년 ${String(km).padStart(2,'0')}월 사용분 &nbsp;|&nbsp; 입주자용</div>
+    </div>
+    <div class="nb-bldg-info">경남프라자 관리단<br>031-422-7474</div>
+  </div>
 
-      <div class="n-sec-hd">관 리 비 명 세 서</div>
-      <table class="n-tbl" style="margin-bottom:0;">
-        <tr><td colspan="2" class="c" style="font-size:8pt;background:#f5f5f5;border-bottom:1px solid #999;padding:3px;">
-          ${ky} 년 &nbsp; ${String(km).padStart(2,'0')} 월 &nbsp; 사용분 명세서
-        </td></tr>
+  <div class="nb-top">
+    <div class="nb-left">
+      <table class="nb-tbl">
+        <tr><td class="hd" colspan="2">관 리 비 명 세</td></tr>
+        <tr><td class="lbl">공용관리요금</td><td class="r">${fixedAmt ? fixedAmt.toLocaleString() : '-'}</td></tr>
+        <tr><td class="lbl">공용전기요금</td><td class="r">${elecAmt ? elecAmt.toLocaleString() : '-'}</td></tr>
+        <tr><td class="lbl">공용수도요금</td><td class="r">${waterAmt ? waterAmt.toLocaleString() : '-'}</td></tr>
+        <tr><td class="lbl">전용수도요금</td><td class="r">${privAmt ? privAmt.toLocaleString() : '-'}</td></tr>
+        <tr class="sum-row"><td>당월 합계</td><td class="r">${d.total.toLocaleString()}</td></tr>
       </table>
-      <div class="n-gap"></div>
-      <table class="n-tbl">
-        <tr><td class="lbl">당월금액</td><td class="r">${d.total.toLocaleString()}</td></tr>
-        <tr><td class="lbl">미납금액</td><td class="r">${unpaidTotal ? unpaidTotal.toLocaleString() : '-'}</td></tr>
-        <tr><td class="lbl">연 체 료</td><td class="r">${lateTotal ? lateTotal.toLocaleString() : '-'}</td></tr>
-        <tr class="claim-row"><td class="lbl-b" style="background:#ccc;">납기내금액</td><td class="r bold" style="font-size:10pt;">${claimAmt.toLocaleString()}</td></tr>
-        <tr><td class="lbl">납기후금액</td><td class="r" style="font-size:8.5pt;color:#333;">${afterDueAmt.toLocaleString()}</td></tr>
-      </table>
-
-      <div class="n-gap2"></div>
-      <div class="n-sec-hd2">수 납 은 행</div>
-      <table class="n-tbl">
-        <tr><td class="lbl" style="width:30%;">우리은행</td><td>1005-902-946812</td></tr>
-        <tr><td class="lbl">예 금 주</td><td>경남프라자 관리단</td></tr>
-      </table>
-
-      <div class="n-gap2"></div>
-      <div class="n-sec-hd2">사용량별 지침</div>
-      <table class="n-tbl">
+      <div style="height:5px;"></div>
+      <table class="nb-tbl">
         <tr>
-          <th class="lbl" style="text-align:center;background:#ddd;">구분</th>
-          <th style="background:#ddd;">전월</th><th style="background:#ddd;">당월</th>
-          <th style="background:#ddd;">사용량</th><th style="background:#ddd;">사용요금</th>
+          <td class="hd">구분</td><td class="hd">전월</td><td class="hd">당월</td>
+          <td class="hd">사용량</td><td class="hd">요금</td>
         </tr>
         ${mRow}
-        <tr><td class="lbl" style="color:white;">　</td><td></td><td></td><td></td><td></td></tr>
-        <tr><td class="lbl" style="color:white;">　</td><td></td><td></td><td></td><td></td></tr>
       </table>
-
-    </div><!-- /n-top-left -->
-
-    <div class="n-top-right">
-      <div class="n-bill-box">
-        <div class="n-bill-tag">관리비 고지서</div>
-        <div class="n-bill-sub">입 주 자 용</div>
-        <div class="n-bill-bldg">경 남 프 라 자</div>
-        <div class="n-bill-room">${roomNum}</div>
-        <div class="n-bill-ho">호</div>
+    </div>
+    <div class="nb-right">
+      <div class="nb-amount-box">
+        <div class="nb-room-line">
+          <span class="nb-room-num">${roomNum}</span>
+          <span class="nb-room-ho">호</span>
+        </div>
+        <div class="nb-amt-row">
+          <span class="nb-amt-label">당 월 금 액</span>
+          <span class="nb-amt-val">${d.total.toLocaleString()}</span>
+        </div>
+        <div class="nb-amt-row">
+          <span class="nb-amt-label">미 납 금 액</span>
+          <span class="nb-amt-val">${unpaidTotal ? unpaidTotal.toLocaleString() : '-'}</span>
+        </div>
+        <div class="nb-amt-row">
+          <span class="nb-amt-label">연 &nbsp; 체 &nbsp; 료</span>
+          <span class="nb-amt-val">${lateTotal ? lateTotal.toLocaleString() : '-'}</span>
+        </div>
+        <div class="nb-amt-main">
+          <span class="nb-amt-main-label">납기내 금액</span>
+          <span class="nb-amt-main-val">${claimAmt.toLocaleString()}</span>
+        </div>
+        <div class="nb-amt-row" style="margin-top:3px;">
+          <span class="nb-amt-label">납기후 금액</span>
+          <span class="nb-amt-val" style="color:#666;font-size:8pt;">${afterDueAmt.toLocaleString()}</span>
+        </div>
       </div>
     </div>
-  </div><!-- /n-top -->
+  </div>
 
-  <hr class="n-sep">
+  <div class="nb-pay-box">
+    <div class="nb-pay-hd">수납 정보</div>
+    <div class="nb-pay-row">
+      <span class="nb-pay-key">은행</span>
+      <span class="nb-pay-val">우리은행 &nbsp; 1005-902-946812 &nbsp; (예금주: 경남프라자 관리단)</span>
+    </div>
+    <div class="nb-pay-row">
+      <span class="nb-pay-key">납부기한</span>
+      <span class="nb-pay-val">${dueDateDisp}</span>
+    </div>
+    <div class="nb-pay-row">
+      <span class="nb-pay-key">안내</span>
+      <span class="nb-pay-val">납부기한 경과 시 연체료가 부과됩니다 (연 2.325%)</span>
+    </div>
+  </div>
 
-  <!-- ═══ 납입영수증 ═══ -->
-  <div class="n-sec-hd2">관리비 납입영수증 (입주자용)</div>
-  <table class="n-tbl">
-    <tr>
-      <td class="lbl" style="width:26%;">공용관리요금</td>
-      <td class="r" style="width:22%;">${fixedAmt ? fixedAmt.toLocaleString() : '-'}</td>
-      <td class="lbl" style="width:26%;">전용수도요금</td>
-      <td class="r" style="width:26%;">${privAmt ? privAmt.toLocaleString() : '-'}</td>
-    </tr>
-    <tr>
-      <td class="lbl">공용전기요금</td>
-      <td class="r">${elecAmt ? elecAmt.toLocaleString() : '-'}</td>
-      <td></td><td></td>
-    </tr>
-    <tr>
-      <td class="lbl">공용수도요금</td>
-      <td class="r">${waterAmt ? waterAmt.toLocaleString() : '-'}</td>
-      <td></td><td></td>
-    </tr>
-    <tr><td colspan="4" style="padding:5px 0;border:none;"></td></tr>
-    <tr class="total-row">
-      <td class="bold" style="padding:5px 7px;">총 액</td>
-      <td></td><td></td>
-      <td class="r bold" style="font-size:10.5pt;">${d.total.toLocaleString()}</td>
-    </tr>
-  </table>
+  <div style="position:relative;margin:10px 0;">
+    <hr class="nb-cut">
+    <span class="nb-cut-label">✂ 절취선</span>
+  </div>
 
-  <div class="n-gap"></div>
-  <table class="n-tbl">
-    <tr>
-      <td class="lbl-b" style="width:30%;text-align:center;background:#ddd;">납 부 기 한</td>
-      <td class="c bold" style="font-size:9.5pt;">${dueDateDisp}</td>
-    </tr>
-  </table>
-
-  <div class="n-footer">
-    <div class="n-gap2"></div>
-    <div class="n-bldg-name">경남프라자 관리단</div>
-    <div class="n-tel">T.&nbsp; 0 3 1 - 4 2 2 - 7 4 7 4</div>
-    <div class="n-note">※ 납부기한이 경과되면 미납요금에 해당하는 연체료가 부과됩니다.</div>
+  <div class="nb-rcpt">
+    <div class="nb-rcpt-left">
+      <div class="nb-rcpt-title">관리비 납입영수증 (입주자용)</div>
+      <div class="nb-rcpt-row">
+        <span class="nb-rcpt-key">기 간</span>
+        <span class="nb-rcpt-val">${ky}년 ${String(km).padStart(2,'0')}월 사용분</span>
+      </div>
+      <div class="nb-rcpt-row">
+        <span class="nb-rcpt-key">공용관리</span>
+        <span class="nb-rcpt-val">${fixedAmt ? fixedAmt.toLocaleString() : '-'}</span>
+      </div>
+      <div class="nb-rcpt-row">
+        <span class="nb-rcpt-key">공용전기</span>
+        <span class="nb-rcpt-val">${elecAmt ? elecAmt.toLocaleString() : '-'}</span>
+      </div>
+      <div class="nb-rcpt-row">
+        <span class="nb-rcpt-key">공용수도</span>
+        <span class="nb-rcpt-val">${waterAmt ? waterAmt.toLocaleString() : '-'}</span>
+      </div>
+      <div class="nb-rcpt-row">
+        <span class="nb-rcpt-key">전용수도</span>
+        <span class="nb-rcpt-val">${privAmt ? privAmt.toLocaleString() : '-'}</span>
+      </div>
+      <div class="nb-rcpt-total">
+        <span>합 계</span>
+        <span>${d.total.toLocaleString()}</span>
+      </div>
+    </div>
+    <div class="nb-rcpt-right">
+      <div style="font-size:16pt;font-weight:900;line-height:1;">${roomNum}</div>
+      <div style="font-size:10pt;font-weight:700;margin-bottom:8px;">호</div>
+      <div style="font-size:7.5pt;color:#555;">경남프라자</div>
+      <div class="nb-stamp">수납인</div>
+    </div>
   </div>
 
 </div>`;
@@ -2360,99 +2392,98 @@ function renderInterimPreview(room, baseKey, finalAmt, daysUsed, daysInMonth, av
 
   const html = `<div class="notice-page">
 
-  <!-- ═══ 상단 2단: 명세서(좌) + 고지서박스(우) ═══ -->
-  <div class="n-top">
-    <div class="n-top-left">
+  <div class="nb-header">
+    <div>
+      <div class="nb-title">관리비 고지서</div>
+      <div class="nb-period">중간정산 &nbsp;|&nbsp; ${periodStr}</div>
+    </div>
+    <div class="nb-bldg-info">경남프라자 관리단<br>031-422-7474</div>
+  </div>
 
-      <div class="n-sec-hd">관 리 비 명 세 서</div>
-      <table class="n-tbl" style="margin-bottom:0;">
-        <tr><td colspan="2" class="c" style="font-size:8pt;background:#f5f5f5;padding:3px;">
-          ${periodStr}
-        </td></tr>
+  <div class="nb-top">
+    <div class="nb-left">
+      <table class="nb-tbl">
+        <tr><td class="hd" colspan="2">관 리 비 명 세</td></tr>
+        <tr><td class="lbl">중간정산금액</td><td class="r">${finalAmt ? finalAmt.toLocaleString() : '-'}</td></tr>
+        <tr><td class="lbl">미납금액(연체포함)</td><td class="r">${unpaidTotal ? unpaidTotal.toLocaleString() : '-'}</td></tr>
+        <tr class="sum-row"><td>합 계</td><td class="r">${grandTotal.toLocaleString()}</td></tr>
       </table>
-      <div class="n-gap"></div>
-      <table class="n-tbl">
-        <tr><td class="lbl">정산금액</td><td class="r">${finalAmt ? finalAmt.toLocaleString() : '-'}</td></tr>
-        <tr><td class="lbl">미납금액</td><td class="r">${unpaidTotal ? unpaidTotal.toLocaleString() : '-'}</td></tr>
-        <tr class="claim-row">
-          <td class="lbl-b" style="background:#ccc;">합 계</td>
-          <td class="r bold" style="font-size:10pt;color:#000;">${grandTotal.toLocaleString()}</td>
-        </tr>
+      <div style="height:5px;"></div>
+      <table class="nb-tbl">
+        <tr><td class="hd" colspan="2">수납 은행</td></tr>
+        <tr><td class="lbl">우리은행</td><td>1005-902-946812</td></tr>
+        <tr><td class="lbl">예금주</td><td>경남프라자 관리단</td></tr>
       </table>
-
-      <div class="n-gap2"></div>
-      <div class="n-sec-hd2">수 납 은 행</div>
-      <table class="n-tbl">
-        <tr><td class="lbl" style="width:30%;">우리은행</td><td>1005-902-946812</td></tr>
-        <tr><td class="lbl">예 금 주</td><td>경남프라자 관리단</td></tr>
-      </table>
-
-      <div class="n-gap2"></div>
-      <div class="n-sec-hd2">사용량별 지침</div>
-      <table class="n-tbl">
-        <tr>
-          <th class="lbl" style="text-align:center;background:#ddd;">구분</th>
-          <th style="background:#ddd;">전월</th><th style="background:#ddd;">당월</th>
-          <th style="background:#ddd;">사용량</th><th style="background:#ddd;">사용요금</th>
-        </tr>
-        <tr><td class="lbl">전용수도</td><td class="c">-</td><td class="c">-</td><td class="c">-</td><td class="c">-</td></tr>
-        <tr><td class="lbl" style="color:white;">　</td><td></td><td></td><td></td><td></td></tr>
-        <tr><td class="lbl" style="color:white;">　</td><td></td><td></td><td></td><td></td></tr>
-      </table>
-
-    </div><!-- /n-top-left -->
-
-    <div class="n-top-right">
-      <div class="n-bill-box">
-        <div class="n-bill-tag">관리비 고지서</div>
-        <div class="n-bill-sub">입 주 자 용</div>
-        <div class="n-bill-bldg">경 남 프 라 자</div>
-        <div class="n-bill-room">${roomNum}</div>
-        <div class="n-bill-ho">호</div>
+    </div>
+    <div class="nb-right">
+      <div class="nb-amount-box">
+        <div class="nb-room-line">
+          <span class="nb-room-num">${roomNum}</span>
+          <span class="nb-room-ho">호</span>
+        </div>
+        <div class="nb-amt-row">
+          <span class="nb-amt-label">중간정산금액</span>
+          <span class="nb-amt-val">${finalAmt ? finalAmt.toLocaleString() : '-'}</span>
+        </div>
+        <div class="nb-amt-row">
+          <span class="nb-amt-label">미 납 금 액</span>
+          <span class="nb-amt-val">${unpaidTotal ? unpaidTotal.toLocaleString() : '-'}</span>
+        </div>
+        <div class="nb-amt-main">
+          <span class="nb-amt-main-label">청구 금액</span>
+          <span class="nb-amt-main-val">${grandTotal.toLocaleString()}</span>
+        </div>
       </div>
     </div>
-  </div><!-- /n-top -->
+  </div>
 
-  <hr class="n-sep">
+  <div class="nb-pay-box">
+    <div class="nb-pay-hd">수납 정보</div>
+    <div class="nb-pay-row">
+      <span class="nb-pay-key">은행</span>
+      <span class="nb-pay-val">우리은행 &nbsp; 1005-902-946812 &nbsp; (예금주: 경남프라자 관리단)</span>
+    </div>
+    <div class="nb-pay-row">
+      <span class="nb-pay-key">발행일</span>
+      <span class="nb-pay-val">${issueDateStr}</span>
+    </div>
+    <div class="nb-pay-row">
+      <span class="nb-pay-key">안내</span>
+      <span class="nb-pay-val">납부기한 경과 시 연체료가 부과됩니다 (연 2.325%)</span>
+    </div>
+  </div>
 
-  <!-- ═══ 관리비 세부내역서 (총액만, 항목 세분화 없음) ═══ -->
-  <div class="n-sec-hd2">관리비 세부내역서</div>
-  <table class="n-tbl">
-    <tr>
-      <td class="lbl" style="width:40%;">중간정산분</td>
-      <td class="r">${finalAmt ? finalAmt.toLocaleString() : '-'}</td>
-      <td style="width:20%;border-left:2px solid #999;"></td>
-      <td style="width:20%;"></td>
-    </tr>
-    <tr>
-      <td class="lbl">사용분미납</td>
-      <td class="r">${unpaidTotal ? unpaidTotal.toLocaleString() : '-'}</td>
-      <td style="border-left:2px solid #999;"></td>
-      <td></td>
-    </tr>
-    <tr><td colspan="2" style="padding:4px;border:none;"></td><td style="border-left:2px solid #999;border-bottom:1px solid #444;"></td><td style="border-bottom:1px solid #444;"></td></tr>
-    <tr><td colspan="2" style="padding:4px;border:none;"></td><td style="border-left:2px solid #999;"></td><td></td></tr>
-    <tr class="total-row">
-      <td class="bold" style="padding:5px 7px;">총 액</td>
-      <td></td>
-      <td style="border-left:2px solid #999;background:#bbb;"></td>
-      <td class="r bold" style="font-size:10.5pt;background:#bbb;">${grandTotal.toLocaleString()}</td>
-    </tr>
-  </table>
+  <div style="position:relative;margin:10px 0;">
+    <hr class="nb-cut">
+    <span class="nb-cut-label">✂ 절취선</span>
+  </div>
 
-  <div class="n-gap"></div>
-  <table class="n-tbl">
-    <tr>
-      <td class="lbl-b" style="width:30%;text-align:center;background:#ddd;">발 행 일 자</td>
-      <td class="c bold" style="font-size:9.5pt;">${issueDateStr}</td>
-    </tr>
-  </table>
-
-  <div class="n-footer">
-    <div class="n-gap2"></div>
-    <div class="n-bldg-name">경남프라자 관리단</div>
-    <div class="n-tel">T.&nbsp; 0 3 1 - 4 2 2 - 7 4 7 4</div>
-    <div class="n-note">※ 납부기한이 경과되면 미납요금에 해당하는 연체료가 부과됩니다.</div>
+  <div class="nb-rcpt">
+    <div class="nb-rcpt-left">
+      <div class="nb-rcpt-title">관리비 납입영수증 (입주자용)</div>
+      <div class="nb-rcpt-row">
+        <span class="nb-rcpt-key">기 간</span>
+        <span class="nb-rcpt-val">${periodStr}</span>
+      </div>
+      <div class="nb-rcpt-row">
+        <span class="nb-rcpt-key">중간정산</span>
+        <span class="nb-rcpt-val">${finalAmt ? finalAmt.toLocaleString() : '-'}</span>
+      </div>
+      <div class="nb-rcpt-row">
+        <span class="nb-rcpt-key">미납금액</span>
+        <span class="nb-rcpt-val">${unpaidTotal ? unpaidTotal.toLocaleString() : '-'}</span>
+      </div>
+      <div class="nb-rcpt-total">
+        <span>합 계</span>
+        <span>${grandTotal.toLocaleString()}</span>
+      </div>
+    </div>
+    <div class="nb-rcpt-right">
+      <div style="font-size:16pt;font-weight:900;line-height:1;">${roomNum}</div>
+      <div style="font-size:10pt;font-weight:700;margin-bottom:8px;">호</div>
+      <div style="font-size:7.5pt;color:#555;">경남프라자</div>
+      <div class="nb-stamp">수납인</div>
+    </div>
   </div>
 
 </div>`;
