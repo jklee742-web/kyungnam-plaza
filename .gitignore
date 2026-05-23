@@ -1,0 +1,15 @@
+# Environment
+.env
+token.json
+client_secrets.json
+cookies.txt
+
+# Downloaded files
+downloads/
+*.json
+!package.json
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
