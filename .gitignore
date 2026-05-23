@@ -1,0 +1,24 @@
+# 환경 변수 (API 키 포함 - 절대 커밋하지 마세요)
+.env
+social-media-automation/.env
+
+# 인증 토큰
+*.pickle
+youtube_token.pickle
+youtube_client_secrets.json
+
+# 다운로드된 영상 파일
+social-media-automation/downloads/*.mp4
+social-media-automation/downloads/*.webm
+social-media-automation/downloads/*.mkv
+social-media-automation/downloads/*.json
+social-media-automation/downloads/*.jpg
+social-media-automation/downloads/*.png
+social-media-automation/downloads/*.webp
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
